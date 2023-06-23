@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from enum import Enum
+from typing import List, Tuple
 
 import numpy as np
 import pygame
@@ -16,6 +18,8 @@ pygame.display.set_caption("NPC Interaction Game")
 # Define colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
+BLUE = (0, 0, 255)
+GREEN = (0, 255, 0)
 
 # Define game states
 MENU = 0
@@ -37,6 +41,18 @@ class Point2D:
     y: float
 
 
+class RoomName(Enum):
+    HALL = "HALL"
+    BATHROOM = "BATHROOM"
+
+
+@dataclass
+class Rectangle:
+    top_left: Point2D
+    width: float
+    height: float
+
+
 class Player:
     def __init__(self, pos):
         self.pos = pos
@@ -44,11 +60,17 @@ class Player:
         self.dx = 0
         self.dy = 0
 
-    def move(self, npcs, terrain):
+    def move(self, room):
         new_pos = Point2D(self.pos.x + self.dx * self.speed, self.pos.y + self.dy * self.speed)
 
-        if not (self.collides_with_terrain(new_pos, terrain_mask) or self.collides_with_npcs(new_pos, npcs)):
+        if not (self.collides_with_terrain(new_pos, room.terrain_mask) or self.collides_with_npcs(new_pos, room.npcs)):
             self.pos = new_pos
+
+        for door in room.doors:
+            if self.collides_with_door(new_pos, door):
+                return door.out_room
+
+        return room.name
 
     def draw(self):
         pygame.draw.circle(screen, WHITE, (int(self.pos.x), int(self.pos.y)), 20)
@@ -69,14 +91,52 @@ class Player:
         distance = ((pos.x - npc.pos.x) ** 2 + (pos.y - npc.pos.y) ** 2) ** 0.5
         return distance <= NPC_RADIUS
 
+    def collides_with_door(self, pos, door):
+        return (
+            door.rectangle.top_left.x <= pos.x <= door.rectangle.top_left.x + door.rectangle.width
+            and door.rectangle.top_left.y <= pos.y <= door.rectangle.top_left.y + door.rectangle.height
+        )
 
+
+@dataclass
 class NPC:
-    def __init__(self, name, pos):
-        self.pos = pos
-        self.name = name
+    name: str
+    pos: Point2D
+
+    chat_history: str = ""
 
     def draw(self):
         pygame.draw.circle(screen, WHITE, (int(self.pos.x), int(self.pos.y)), 20)
+
+    def chat(self, new_message):
+        self.chat_history += f"Player: {new_message}\n"
+
+        # TODO: Add NPC message
+        answer = f"{self.name}: Answer\n"
+        self.chat_history += answer
+
+        return self.chat_history
+
+
+@dataclass
+class Door:
+    rectangle: Rectangle
+    in_room: RoomName
+    out_room: RoomName
+
+    color: Tuple
+
+    def draw(self):
+        pygame.draw.rect(
+            screen,
+            self.color,
+            (
+                int(self.rectangle.top_left.x),
+                int(self.rectangle.top_left.y),
+                int(self.rectangle.width),
+                int(self.rectangle.height),
+            ),
+        )
 
 
 def draw_menu():
@@ -89,16 +149,32 @@ def handle_menu_events():
     return True
 
 
-def draw_game(player, npcs):
+def draw_game(player, room):
+    screen.fill(room.background_color)
     # Draw player character
     player.draw()
 
     # Draw NPCs
-    for npc in npcs:
+    for npc in room.npcs:
         npc.draw()
 
+    # Draw doors
+    for door in room.doors:
+        door.draw()
 
-def handle_game_events(player, npcs):
+    pygame.display.flip()
+
+
+@dataclass
+class Room:
+    name: RoomName
+    npcs: List[NPC]
+    doors: List[Door]
+    terrain_mask: np.array
+    background_color: Tuple
+
+
+def handle_game_events(player, room):
     for event in pygame.event.get():
         if event.type == QUIT:
             return False
@@ -113,7 +189,7 @@ def handle_game_events(player, npcs):
             elif event.key == K_RIGHT:
                 player.dx = 1
             elif event.key == K_SPACE:
-                for npc in npcs:
+                for npc in room.npcs:
                     distance = ((player.pos.x - npc.pos.x) ** 2 + (player.pos.y - npc.pos.y) ** 2) ** 0.5
                     if distance <= NPC_RADIUS:  # Adjust the distance as needed
                         # TODO: Open chat window and handle NPC interaction
@@ -136,8 +212,26 @@ def game_loop():
     # Create player character
     player = Player(Point2D(WIDTH / 2, HEIGHT / 2))
 
-    # Create NPCs
-    npcs = [NPC("a", Point2D(100, 100)), NPC("b", Point2D(200, 200))]
+    room_1 = Room(
+        name=RoomName.HALL,
+        npcs=[NPC("a", Point2D(100, 100)), NPC("b", Point2D(200, 200))],
+        doors=[
+            Door(Rectangle(Point2D(350, 250), 40, 10), in_room=RoomName.HALL, out_room=RoomName.BATHROOM, color=WHITE)
+        ],
+        terrain_mask=terrain_mask,
+        background_color=BLACK,
+    )
+    room_2 = Room(
+        name=RoomName.BATHROOM,
+        npcs=[NPC("a", Point2D(400, 500)), NPC("b", Point2D(500, 100))],
+        doors=[
+            Door(Rectangle(Point2D(150, 150), 40, 10), in_room=RoomName.BATHROOM, out_room=RoomName.HALL, color=WHITE)
+        ],
+        terrain_mask=terrain_mask,
+        background_color=BLUE,
+    )
+    rooms = {RoomName.HALL: room_1, RoomName.BATHROOM: room_2}
+    current_room = RoomName.HALL
 
     state = GAME
     while True:
@@ -147,18 +241,16 @@ def game_loop():
                 break
 
         elif state == GAME:
-            if not handle_game_events(player, npcs):
+            room = rooms[current_room]
+            if not handle_game_events(player, room):
                 break
 
-            player.move(npcs=npcs, terrain=terrain_mask)
-
-            screen.fill(BLACK)
-            draw_game(player, npcs)
-            pygame.display.flip()
+            current_room = player.move(room)
+            draw_game(player, room)
 
 
 # Game loop
-state = MENU
+state = GAME
 game_loop()
 
 # Quit the game
