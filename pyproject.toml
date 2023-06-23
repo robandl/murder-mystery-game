@@ -1,0 +1,9 @@
+[tool.black]
+line-length = 120
+skip-string-normalization = 1
+
+[tool.isort]
+profile = "black"
+line_length = 120
+src_paths = ["huddlyquarry"]
+known_first_party = "bbox"
