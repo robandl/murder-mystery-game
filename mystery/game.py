@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 import numpy as np
 import pygame
 from pygame.locals import K_DOWN, K_LEFT, K_RIGHT, K_SPACE, K_UP, KEYDOWN, KEYUP, QUIT
@@ -29,6 +31,12 @@ terrain_mask[:, -5:] = True  # Right frame
 NPC_RADIUS = 40
 
 
+@dataclass
+class Point2D:
+    x: float
+    y: float
+
+
 class Player:
     def __init__(self, pos):
         self.pos = pos
@@ -37,16 +45,16 @@ class Player:
         self.dy = 0
 
     def move(self, npcs, terrain):
-        new_pos = [self.pos[0] + self.dx * self.speed, self.pos[1] + self.dy * self.speed]
+        new_pos = Point2D(self.pos.x + self.dx * self.speed, self.pos.y + self.dy * self.speed)
 
         if not (self.collides_with_terrain(new_pos, terrain_mask) or self.collides_with_npcs(new_pos, npcs)):
             self.pos = new_pos
 
     def draw(self):
-        pygame.draw.circle(screen, WHITE, self.pos, 20)
+        pygame.draw.circle(screen, WHITE, (int(self.pos.x), int(self.pos.y)), 20)
 
     def collides_with_terrain(self, pos, terrain_mask):
-        x, y = int(pos[0]), int(pos[1])
+        x, y = int(pos.x), int(pos.y)
         if 0 <= x < terrain_mask.shape[1] and 0 <= y < terrain_mask.shape[0]:
             return terrain_mask[y, x]
         return False
@@ -58,7 +66,7 @@ class Player:
         return False
 
     def collides_with_single_npc(self, pos, npc):
-        distance = ((pos[0] - npc.pos[0]) ** 2 + (pos[1] - npc.pos[1]) ** 2) ** 0.5
+        distance = ((pos.x - npc.pos.x) ** 2 + (pos.y - npc.pos.y) ** 2) ** 0.5
         return distance <= NPC_RADIUS
 
 
@@ -68,7 +76,7 @@ class NPC:
         self.name = name
 
     def draw(self):
-        pygame.draw.circle(screen, WHITE, self.pos, 20)
+        pygame.draw.circle(screen, WHITE, (int(self.pos.x), int(self.pos.y)), 20)
 
 
 def draw_menu():
@@ -106,7 +114,7 @@ def handle_game_events(player, npcs):
                 player.dx = 1
             elif event.key == K_SPACE:
                 for npc in npcs:
-                    distance = ((player.pos[0] - npc.pos[0]) ** 2 + (player.pos[1] - npc.pos[1]) ** 2) ** 0.5
+                    distance = ((player.pos.x - npc.pos.x) ** 2 + (player.pos.y - npc.pos.y) ** 2) ** 0.5
                     if distance <= NPC_RADIUS:  # Adjust the distance as needed
                         # TODO: Open chat window and handle NPC interaction
                         print(f"Chatting with npc {npc.name}")
@@ -126,10 +134,10 @@ def handle_game_events(player, npcs):
 
 def game_loop():
     # Create player character
-    player = Player([WIDTH / 2, HEIGHT / 2])
+    player = Player(Point2D(WIDTH / 2, HEIGHT / 2))
 
     # Create NPCs
-    npcs = [NPC("a", (100, 100)), NPC("b", (200, 200))]
+    npcs = [NPC("a", Point2D(100, 100)), NPC("b", Point2D(200, 200))]
 
     state = GAME
     while True:
