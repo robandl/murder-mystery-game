@@ -4,7 +4,11 @@ from typing import List, Tuple
 
 import numpy as np
 import pygame
-from pygame.locals import K_DOWN, K_LEFT, K_RIGHT, K_SPACE, K_UP, KEYDOWN, KEYUP, QUIT
+import pygame_gui
+from chat_box import ChatBox
+from npc import NPC
+from pygame.locals import K_DOWN, K_ESCAPE, K_LEFT, K_RIGHT, K_SPACE, K_UP, KEYDOWN, KEYUP, QUIT
+from utils import BLACK, BLUE, WHITE, Point2D
 
 # Initialize Pygame
 pygame.init()
@@ -12,14 +16,13 @@ pygame.init()
 # Set up the display
 WIDTH = 800
 HEIGHT = 600
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("NPC Interaction Game")
+CHAT_HEIGHT = int(HEIGHT * 0.5)
 
-# Define colors
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-BLUE = (0, 0, 255)
-GREEN = (0, 255, 0)
+screen = pygame.display.set_mode((WIDTH, HEIGHT + CHAT_HEIGHT))
+pygame.display.set_caption("Mystery Dinner")
+
+ui_manager = pygame_gui.UIManager((WIDTH, HEIGHT + CHAT_HEIGHT), 'data/themes/theme_1.json')
+
 
 # Define game states
 MENU = 0
@@ -33,12 +36,6 @@ terrain_mask[:, :5] = True  # Left frame
 terrain_mask[:, -5:] = True  # Right frame
 
 NPC_RADIUS = 40
-
-
-@dataclass
-class Point2D:
-    x: float
-    y: float
 
 
 class RoomName(Enum):
@@ -99,23 +96,9 @@ class Player:
 
 
 @dataclass
-class NPC:
-    name: str
-    pos: Point2D
-
-    chat_history: str = ""
-
-    def draw(self):
-        pygame.draw.circle(screen, WHITE, (int(self.pos.x), int(self.pos.y)), 20)
-
-    def chat(self, new_message):
-        self.chat_history += f"Player: {new_message}\n"
-
-        # TODO: Add NPC message
-        answer = f"{self.name}: Answer\n"
-        self.chat_history += answer
-
-        return self.chat_history
+class Game:
+    active_npc: NPC | None
+    chat_box: ChatBox
 
 
 @dataclass
@@ -156,13 +139,21 @@ def draw_game(player, room):
 
     # Draw NPCs
     for npc in room.npcs:
-        npc.draw()
+        npc.draw(screen)
 
     # Draw doors
     for door in room.doors:
         door.draw()
 
-    pygame.display.flip()
+    # Draw the chat frame
+    for npc in room.npcs:
+        if npc.chat_open:
+            draw_chat_frame(npc)
+
+
+def draw_chat_frame(npc: NPC | None = None):
+    # TODO: Fix hack
+    ui_manager.draw_ui(window_surface=screen)
 
 
 @dataclass
@@ -174,10 +165,18 @@ class Room:
     background_color: Tuple
 
 
-def handle_game_events(player, room):
+def handle_game_events(game, player, room):
     for event in pygame.event.get():
         if event.type == QUIT:
             return False
+
+        ui_manager.process_events(event)
+        if game.chat_box.is_on:
+            if event.type == KEYDOWN and event.key == K_ESCAPE:
+                game.chat_box.close_chat()
+            else:
+                game.chat_box.handle_event(event)
+                continue
 
         if event.type == KEYDOWN:
             if event.key == K_UP:
@@ -191,9 +190,10 @@ def handle_game_events(player, room):
             elif event.key == K_SPACE:
                 for npc in room.npcs:
                     distance = ((player.pos.x - npc.pos.x) ** 2 + (player.pos.y - npc.pos.y) ** 2) ** 0.5
-                    if distance <= NPC_RADIUS:  # Adjust the distance as needed
-                        # TODO: Open chat window and handle NPC interaction
-                        print(f"Chatting with npc {npc.name}")
+                    if distance > 2 * NPC_RADIUS:  # Adjust the distance as needed
+                        continue
+                    print(f"Chatting with npc {npc.name}")
+                    game.chat_box.open_chat(npc)
 
         if event.type == KEYUP:
             if event.key == K_UP and player.dy == -1:
@@ -232,6 +232,13 @@ def game_loop():
     )
     rooms = {RoomName.HALL: room_1, RoomName.BATHROOM: room_2}
     current_room = RoomName.HALL
+    chat_box = ChatBox(
+        ui_manager=ui_manager,
+        text_rect=pygame.Rect(200, 600, 400, 200),
+        input_rect=pygame.Rect(200, 800, 400, 100),
+        button_pos=Point2D(650, 750),
+    )
+    game = Game(active_npc=None, chat_box=chat_box)
 
     state = GAME
     while True:
@@ -242,11 +249,12 @@ def game_loop():
 
         elif state == GAME:
             room = rooms[current_room]
-            if not handle_game_events(player, room):
+            if not handle_game_events(game, player, room):
                 break
-
             current_room = player.move(room)
             draw_game(player, room)
+        ui_manager.update(0.01)
+        pygame.display.flip()
 
 
 # Game loop
