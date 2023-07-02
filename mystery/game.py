@@ -6,9 +6,11 @@ import numpy as np
 import pygame
 import pygame_gui
 from chat_box import ChatBox
-from npc import NPC
+from llm import get_llm
+from mystery.characters import CHARACTERS
+from mystery.utils import BLACK, BLUE, WHITE, Point2D
+from npc import NPC, LlmNPC
 from pygame.locals import K_DOWN, K_ESCAPE, K_LEFT, K_RIGHT, K_SPACE, K_UP, KEYDOWN, KEYUP, QUIT
-from utils import BLACK, BLUE, WHITE, Point2D
 
 # Initialize Pygame
 pygame.init()
@@ -36,6 +38,9 @@ terrain_mask[:, :5] = True  # Left frame
 terrain_mask[:, -5:] = True  # Right frame
 
 NPC_RADIUS = 40
+
+bot = get_llm("local")
+user = "Robin"
 
 
 class RoomName(Enum):
@@ -212,9 +217,12 @@ def game_loop():
     # Create player character
     player = Player(Point2D(WIDTH / 2, HEIGHT / 2))
 
+    for name, char in CHARACTERS.items():
+        char = LlmNPC(name=name, pos=char.pos, bot=bot, prompt_path=char.prompt_path, user=user)
+
     room_1 = Room(
         name=RoomName.HALL,
-        npcs=[NPC("a", Point2D(100, 100)), NPC("b", Point2D(200, 200))],
+        npcs=[char, NPC("b", Point2D(200, 200))],
         doors=[
             Door(Rectangle(Point2D(350, 250), 40, 10), in_room=RoomName.HALL, out_room=RoomName.BATHROOM, color=WHITE)
         ],

@@ -1,6 +1,10 @@
 from dataclasses import dataclass
 
 import pygame
+from langchain import LLMChain
+from langchain.memory import ConversationBufferWindowMemory
+from langchain.prompts import PromptTemplate
+from llm import Bot, LlmConfig
 from utils import GREEN, WHITE, Point2D
 
 
@@ -25,11 +29,51 @@ class NPC:
         return self.chat_history
 
     def chat(self, new_message):
-        if self.chat_open:
-            self.chat_history += f"Player: {new_message}\n"
+        assert self.chat_open
 
-            # TODO: Add NPC message
-            answer = f"{self.name}: Answer\n"
-            self.chat_history += answer
+        self.chat_history += f"Player: {new_message}\n"
+
+        answer = f"{self.name}: Answer\n"
+        self.chat_history += answer
+
+        return self.chat_history
+
+
+class LlmNPC(NPC):
+    def __init__(self, bot: Bot, prompt_path, user, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        prompt = self._load_prompt(prompt_path=prompt_path, config=bot.config, user=user)
+
+        verbose = True
+        prompt = PromptTemplate(template=prompt, input_variables=["user_input", "history"])
+        full_user_name = bot.config.user_str
+        if "{user}" in full_user_name:
+            full_user_name.replace("{user}", user)
+        memory = ConversationBufferWindowMemory(
+            k=10, human_prefix=full_user_name, ai_prefix=bot.config.ai_str, memory_key="history", input_key="user_input"
+        )
+        self.llm_chain = LLMChain(llm=bot.llm, prompt=prompt, verbose=verbose, memory=memory)
+        self.user = user
+
+    def _load_prompt(self, prompt_path, config: LlmConfig, user: str):
+        with open(prompt_path, 'r') as file:
+            prompt = file.read().rstrip("\n")
+
+        prompt = prompt.replace("{instruction_str}", config.instruction_str)
+        prompt = prompt.replace("{user_str}", config.user_str)
+        prompt = prompt.replace("{ai_str}", config.ai_str)
+        prompt = prompt.replace("{user}", user)
+        return prompt
+
+    def chat(self, new_message):
+        assert self.chat_open
+        self.chat_history += f"Detective {self.user}: {new_message}\n"
+
+        res = self.llm_chain(new_message)
+        answer = res["text"].lstrip()
+
+        answer = f"{self.name}: {answer}\n"
+        self.chat_history += answer
 
         return self.chat_history
