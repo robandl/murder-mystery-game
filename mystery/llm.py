@@ -13,7 +13,7 @@ class LlmConfig:
     user_str: str  # string to begin the query
     ai_str: str  # string to begin the model response
     instruction_str: str = ""  # string to begin the instruction block
-    stop_str: Optional[List[str]] = None
+    stop_tokens: Optional[List[str]] = None
 
 
 @dataclass
@@ -23,7 +23,7 @@ class Bot:
 
 
 class LocalLlm(LLM):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, stop_tokens: Optional[List[str]] = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     @property
@@ -75,14 +75,15 @@ def get_llm(model: str) -> Bot:
             config=LlmConfig(user_str="Detective {user}", ai_str="You", instruction_str="Instructions:"),
         )
     elif model == "local":
+        stop_tokens = ["###", "Input"]
         return Bot(
-            llm=LocalLlm(),
+            llm=LocalLlm(stop_tokens=stop_tokens),
             config=LlmConfig(
                 # TheBloke_Nous-Hermes-13B-GPTQ
                 user_str="### Input",
                 ai_str="### Response",
-                instruction_str="###",
-                stop_str=["###"],
+                instruction_str="### Instruction",
+                stop_tokens=stop_tokens,
             ),
         )
     else:

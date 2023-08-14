@@ -1,130 +1,44 @@
 from dataclasses import dataclass
-from enum import Enum
-from typing import List, Tuple
+from pathlib import Path
 
-import numpy as np
 import pygame
 import pygame_gui
 from chat_box import ChatBox
 from llm import get_llm
-from mystery.characters import CHARACTERS
-from mystery.utils import BLACK, BLUE, WHITE, Point2D
-from npc import NPC, LlmNPC
+
+# from mystery.characters import CHARACTERS
+from mystery.utils import Point2D
+from npc import NPC
+from params import Params
 from pygame.locals import K_DOWN, K_ESCAPE, K_LEFT, K_RIGHT, K_SPACE, K_UP, KEYDOWN, KEYUP, QUIT
+from world import World
 
 # Initialize Pygame
 pygame.init()
+config_path = Path(__file__).resolve().parent.parent / "plot" / "business_of_murder" / "game_config.yaml"
+params = Params.from_config(config_path)
 
 # Set up the display
-WIDTH = 800
-HEIGHT = 600
-CHAT_HEIGHT = int(HEIGHT * 0.5)
 
-screen = pygame.display.set_mode((WIDTH, HEIGHT + CHAT_HEIGHT))
+screen = pygame.display.set_mode((params.WIDTH, params.HEIGHT + params.CHAT_HEIGHT))
 pygame.display.set_caption("Mystery Dinner")
 
-ui_manager = pygame_gui.UIManager((WIDTH, HEIGHT + CHAT_HEIGHT), 'data/themes/theme_1.json')
+ui_manager = pygame_gui.UIManager((params.WIDTH, params.HEIGHT + params.CHAT_HEIGHT), 'data/themes/theme_1.json')
 
 
 # Define game states
 MENU = 0
 GAME = 1
 
-terrain_mask = np.zeros((HEIGHT, WIDTH), dtype=bool)
-# Set frame values to True
-terrain_mask[:5, :] = True  # Top frame
-terrain_mask[-5:, :] = True  # Bottom frame
-terrain_mask[:, :5] = True  # Left frame
-terrain_mask[:, -5:] = True  # Right frame
-
-NPC_RADIUS = 40
 
 bot = get_llm("local")
 user = "Robin"
-
-
-class RoomName(Enum):
-    HALL = "HALL"
-    BATHROOM = "BATHROOM"
-
-
-@dataclass
-class Rectangle:
-    top_left: Point2D
-    width: float
-    height: float
-
-
-class Player:
-    def __init__(self, pos):
-        self.pos = pos
-        self.speed = 0.25
-        self.dx = 0
-        self.dy = 0
-
-    def move(self, room):
-        new_pos = Point2D(self.pos.x + self.dx * self.speed, self.pos.y + self.dy * self.speed)
-
-        if not (self.collides_with_terrain(new_pos, room.terrain_mask) or self.collides_with_npcs(new_pos, room.npcs)):
-            self.pos = new_pos
-
-        for door in room.doors:
-            if self.collides_with_door(new_pos, door):
-                return door.out_room
-
-        return room.name
-
-    def draw(self):
-        pygame.draw.circle(screen, WHITE, (int(self.pos.x), int(self.pos.y)), 20)
-
-    def collides_with_terrain(self, pos, terrain_mask):
-        x, y = int(pos.x), int(pos.y)
-        if 0 <= x < terrain_mask.shape[1] and 0 <= y < terrain_mask.shape[0]:
-            return terrain_mask[y, x]
-        return False
-
-    def collides_with_npcs(self, pos, npcs):
-        for npc in npcs:
-            if self.collides_with_single_npc(pos, npc):
-                return True
-        return False
-
-    def collides_with_single_npc(self, pos, npc):
-        distance = ((pos.x - npc.pos.x) ** 2 + (pos.y - npc.pos.y) ** 2) ** 0.5
-        return distance <= NPC_RADIUS
-
-    def collides_with_door(self, pos, door):
-        return (
-            door.rectangle.top_left.x <= pos.x <= door.rectangle.top_left.x + door.rectangle.width
-            and door.rectangle.top_left.y <= pos.y <= door.rectangle.top_left.y + door.rectangle.height
-        )
 
 
 @dataclass
 class Game:
     active_npc: NPC | None
     chat_box: ChatBox
-
-
-@dataclass
-class Door:
-    rectangle: Rectangle
-    in_room: RoomName
-    out_room: RoomName
-
-    color: Tuple
-
-    def draw(self):
-        pygame.draw.rect(
-            screen,
-            self.color,
-            (
-                int(self.rectangle.top_left.x),
-                int(self.rectangle.top_left.y),
-                int(self.rectangle.width),
-                int(self.rectangle.height),
-            ),
-        )
 
 
 def draw_menu():
@@ -138,9 +52,9 @@ def handle_menu_events():
 
 
 def draw_game(player, room):
-    screen.fill(room.background_color)
+    screen.fill(room.background)
     # Draw player character
-    player.draw()
+    player.draw(screen)
 
     # Draw NPCs
     for npc in room.npcs:
@@ -148,26 +62,22 @@ def draw_game(player, room):
 
     # Draw doors
     for door in room.doors:
-        door.draw()
+        door.draw(screen)
 
     # Draw the chat frame
     for npc in room.npcs:
         if npc.chat_open:
-            draw_chat_frame(npc)
+            draw_chat_frame(screen, npc)
 
 
-def draw_chat_frame(npc: NPC | None = None):
+def draw_chat_frame(screen, npc: NPC | None = None):
     # TODO: Fix hack
     ui_manager.draw_ui(window_surface=screen)
-
-
-@dataclass
-class Room:
-    name: RoomName
-    npcs: List[NPC]
-    doors: List[Door]
-    terrain_mask: np.array
-    background_color: Tuple
+    if (chat_image := npc.get_chat_image()) is not None:
+        img_size = (int(params.WIDTH / 4 * 0.96), int(params.CHAT_HEIGHT * 0.96))
+        img_pos = (int(0.02 * params.WIDTH / 4), int(params.HEIGHT + 0.02 * params.CHAT_HEIGHT))
+        chat_image = pygame.transform.scale(chat_image, img_size)
+        screen.blit(chat_image, img_pos)
 
 
 def handle_game_events(game, player, room):
@@ -193,12 +103,15 @@ def handle_game_events(game, player, room):
             elif event.key == K_RIGHT:
                 player.dx = 1
             elif event.key == K_SPACE:
-                for npc in room.npcs:
-                    distance = ((player.pos.x - npc.pos.x) ** 2 + (player.pos.y - npc.pos.y) ** 2) ** 0.5
-                    if distance > 2 * NPC_RADIUS:  # Adjust the distance as needed
-                        continue
-                    print(f"Chatting with npc {npc.name}")
-                    game.chat_box.open_chat(npc)
+                distances = [
+                    ((player.pos.x - npc.pos.x) ** 2 + (player.pos.y - npc.pos.y) ** 2) ** 0.5 for npc in room.npcs
+                ]
+                if not distances:
+                    continue
+                closest_npc, distance = min(zip(room.npcs, distances), key=lambda x: x[1])
+                if distance <= 2 * params.NPC_RADIUS:  # Adjust the distance as needed
+                    print(f"Chatting with npc {closest_npc.name}")
+                    game.chat_box.open_chat(closest_npc)
 
         if event.type == KEYUP:
             if event.key == K_UP and player.dy == -1:
@@ -214,36 +127,22 @@ def handle_game_events(game, player, room):
 
 
 def game_loop():
-    # Create player character
-    player = Player(Point2D(WIDTH / 2, HEIGHT / 2))
+    world = World(config_path=config_path)
+    player = world.create_player(params)
+    rooms = world.create_rooms(params=params, bot=bot, user=user)
+    current_room = world.get_starting_room()
 
-    for name, char in CHARACTERS.items():
-        char = LlmNPC(name=name, pos=char.pos, bot=bot, prompt_path=char.prompt_path, user=user)
-
-    room_1 = Room(
-        name=RoomName.HALL,
-        npcs=[char, NPC("b", Point2D(200, 200))],
-        doors=[
-            Door(Rectangle(Point2D(350, 250), 40, 10), in_room=RoomName.HALL, out_room=RoomName.BATHROOM, color=WHITE)
-        ],
-        terrain_mask=terrain_mask,
-        background_color=BLACK,
-    )
-    room_2 = Room(
-        name=RoomName.BATHROOM,
-        npcs=[NPC("a", Point2D(400, 500)), NPC("b", Point2D(500, 100))],
-        doors=[
-            Door(Rectangle(Point2D(150, 150), 40, 10), in_room=RoomName.BATHROOM, out_room=RoomName.HALL, color=WHITE)
-        ],
-        terrain_mask=terrain_mask,
-        background_color=BLUE,
-    )
-    rooms = {RoomName.HALL: room_1, RoomName.BATHROOM: room_2}
-    current_room = RoomName.HALL
     chat_box = ChatBox(
         ui_manager=ui_manager,
-        text_rect=pygame.Rect(200, 600, 400, 200),
-        input_rect=pygame.Rect(200, 800, 400, 100),
+        text_rect=pygame.Rect(
+            int(params.WIDTH / 4), params.HEIGHT, int(params.WIDTH / 2), int(params.CHAT_HEIGHT * 2 / 3)
+        ),
+        input_rect=pygame.Rect(
+            int(params.WIDTH / 4),
+            params.HEIGHT + int(params.CHAT_HEIGHT * 2 / 3),
+            int(params.WIDTH / 2),
+            int(params.CHAT_HEIGHT / 3),
+        ),
         button_pos=Point2D(650, 750),
     )
     game = Game(active_npc=None, chat_box=chat_box)

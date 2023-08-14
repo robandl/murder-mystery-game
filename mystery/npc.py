@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Optional
 
 import pygame
 from langchain import LLMChain
@@ -16,8 +18,19 @@ class NPC:
     chat_open: bool = False
 
     def draw(self, screen):
-        color = GREEN if self.chat_open else WHITE
-        pygame.draw.circle(screen, color, (int(self.pos.x), int(self.pos.y)), 20)
+
+        if not self.get_figure_image():
+            color = GREEN if self.chat_open else WHITE
+            pygame.draw.circle(screen, color, (int(self.pos.x), int(self.pos.y)), 20)
+            return
+
+        img_size = (60, 80)
+        img_pos = (
+            int(self.pos.x - img_size[0] / 2),
+            int(self.pos.y - img_size[0] / 2),
+        )
+        figure_image = pygame.transform.scale(self.get_figure_image(), img_size)
+        screen.blit(figure_image, img_pos)
 
     def open_chat(self):
         self.chat_open = True
@@ -38,9 +51,24 @@ class NPC:
 
         return self.chat_history
 
+    def get_chat_image(self):
+        return None
+
+    def get_figure_image(self):
+        return None
+
 
 class LlmNPC(NPC):
-    def __init__(self, bot: Bot, prompt_path, user, *args, **kwargs):
+    def __init__(
+        self,
+        bot: Bot,
+        prompt_path,
+        user,
+        chat_img: Optional[Path] = None,
+        figure_img: Optional[Path] = None,
+        *args,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
 
         prompt = self._load_prompt(prompt_path=prompt_path, config=bot.config, user=user)
@@ -55,6 +83,14 @@ class LlmNPC(NPC):
         )
         self.llm_chain = LLMChain(llm=bot.llm, prompt=prompt, verbose=verbose, memory=memory)
         self.user = user
+        self._stop_tokens = bot.config.stop_tokens
+
+        self._chat_image = None
+        if chat_img is not None:
+            self._chat_image = pygame.image.load(chat_img)
+        self._figure_image = None
+        if figure_img is not None:
+            self._figure_image = pygame.image.load(figure_img)
 
     def _load_prompt(self, prompt_path, config: LlmConfig, user: str):
         with open(prompt_path, 'r') as file:
@@ -70,10 +106,17 @@ class LlmNPC(NPC):
         assert self.chat_open
         self.chat_history += f"Detective {self.user}: {new_message}\n"
 
-        res = self.llm_chain(new_message)
+        ins = {"stop": self._stop_tokens, "user_input": new_message}
+        res = self.llm_chain(ins)
         answer = res["text"].lstrip()
 
         answer = f"{self.name}: {answer}\n"
         self.chat_history += answer
 
         return self.chat_history
+
+    def get_chat_image(self):
+        return self._chat_image
+
+    def get_figure_image(self):
+        return self._figure_image
