@@ -7,10 +7,11 @@ from animation import Animation
 from door import Door
 from llm import Bot
 from npc import NPC, LlmNPC
+from officer import Officer
 from params import Params
 from player import Player
 from room import Room
-from utils import BLACK, BLUE, WHITE, Point2D, Rectangle, RoomName
+from utils import BLACK, BLUE, Point2D, RoomName
 
 
 class World:
@@ -27,46 +28,64 @@ class World:
         room_str = self.world_config["start_room"]
         return RoomName[room_str.upper()]
 
-    def create_player(self, params: Params) -> Player:
+    def create_player(self, params: Params, rooms: list[Room], current_room: Room) -> Player:
         player_config = self.world_config["player"]
         animation_kwargs = {k: self._get_abs_path(v) for k, v in player_config.pop("animation").items()}
         animation = Animation(**animation_kwargs)
-        return Player(params=params, pos=Point2D(*player_config["start_pos"]), animation=animation)
+        return Player(
+            params=params,
+            pos=Point2D(*player_config["start_pos"]),
+            animation=animation,
+            rooms=rooms,
+            current_room=current_room,
+        )
 
-    def create_rooms(self, params: Params, bot: Bot, user: str) -> Dict[RoomName, Room]:
+    def create_officer(self, npcs: list[NPC], rooms: list[Room]) -> Officer:
+        officer_config = self.world_config["officer"]
+        npc_name = officer_config["name"]
+        npc = [npc for npc in npcs if npc.name == npc_name]
+        assert len(npc) == 1, npc
+
+        return Officer(npc=npc[0], exam_path=officer_config["exam"], rooms=rooms)
+
+    def create_rooms(self, params: Params) -> Dict[RoomName, Room]:
         rooms = {}
         for room_str, room_config in self.world_config["rooms"].items():
             room_name = RoomName[room_str.upper()]
-            npcs = self._create_npcs(room_config.get("npcs", []), bot=bot, user=user)
             doors = self._create_doors(room_config.get("doors", []), in_room=room_name)
             background = self._get_background(room_config["background"])
             terrain = self._create_terrain(params=params)
-            rooms[room_name] = Room(name=room_name, npcs=npcs, doors=doors, terrain=terrain, background=background)
+            image = self._get_abs_path(room_config["image"]) if "image" in room_config else None
+
+            rooms[room_name] = Room(name=room_name, doors=doors, terrain=terrain, background=background, image=image)
         return rooms
 
-    def _create_npcs(self, npc_configs: List[dict], bot: Bot, user: str) -> List[NPC]:
+    def create_npcs(self, rooms: list[Room], bot: Bot, user: str) -> List[NPC]:
         npcs = []
-        for npc_config in npc_configs:
-            name = npc_config["name"]
-            pos = Point2D(*npc_config["start_pos"])
+        for room_str, room_config in self.world_config["rooms"].items():
+            room_name = RoomName[room_str.upper()]
+            for npc_config in room_config["npcs"]:
+                name = npc_config["name"]
+                pos = Point2D(*npc_config["start_pos"])
 
-            if npc_config.get("use_llm", False):
-                prompt_path = self._get_abs_path(npc_config.get("prompt"))
-                chat_img = self._get_abs_path(npc_config.get("chat_img"))
-                figure_img = self._get_abs_path(npc_config.get("figure_img"))
-                assert prompt_path.is_file(), f"Could not find prompt path for npc `{name}` in: {str(prompt_path)}"
-                npc = LlmNPC(
-                    name=name,
-                    pos=pos,
-                    bot=bot,
-                    prompt_path=prompt_path,
-                    user=user,
-                    chat_img=chat_img,
-                    figure_img=figure_img,
-                )
-            else:
-                npc = NPC(name=name, pos=pos)
-            npcs.append(npc)
+                if npc_config.get("use_llm", False):
+                    prompt_path = self._get_abs_path(npc_config.get("prompt"))
+                    chat_img = self._get_abs_path(npc_config.get("chat_img"))
+                    figure_img = self._get_abs_path(npc_config.get("figure_img"))
+                    assert prompt_path.is_file(), f"Could not find prompt path for npc `{name}` in: {str(prompt_path)}"
+                    npc = LlmNPC(
+                        name=name,
+                        room=rooms[room_name],
+                        pos=pos,
+                        bot=bot,
+                        prompt_path=prompt_path,
+                        user=user,
+                        chat_img=chat_img,
+                        figure_img=figure_img,
+                    )
+                else:
+                    npc = NPC(name=name, pos=pos, room=room_name)
+                npcs.append(npc)
         return npcs
 
     def _create_doors(self, door_configs, in_room: RoomName) -> List[Door]:
@@ -74,8 +93,9 @@ class World:
         for door_config in door_configs:
             pos = Point2D(*door_config["start_pos"])
             out_room = RoomName[door_config["out_room"].upper()]
+            img_path = self._get_abs_path(door_config.get("img"))
             assert out_room != in_room
-            door = Door(Rectangle(pos, 40, 10), in_room=in_room, out_room=out_room, color=WHITE)
+            door = Door(pos=pos, in_room=in_room, out_room=out_room, img_path=img_path)
             doors.append(door)
         return doors
 

@@ -7,6 +7,7 @@ from langchain import LLMChain
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.prompts import PromptTemplate
 from llm import Bot, LlmConfig
+from room import Room
 from utils import GREEN, WHITE, Point2D
 
 
@@ -14,6 +15,7 @@ from utils import GREEN, WHITE, Point2D
 class NPC:
     name: str
     pos: Point2D
+    room: Room
     chat_history: str = ""
     chat_open: bool = False
 
@@ -24,7 +26,8 @@ class NPC:
             pygame.draw.circle(screen, color, (int(self.pos.x), int(self.pos.y)), 20)
             return
 
-        img_size = (60, 80)
+        # TODO: remove hardcode
+        img_size = (40, 60)
         img_pos = (
             int(self.pos.x - img_size[0] / 2),
             int(self.pos.y - img_size[0] / 2),
@@ -79,7 +82,7 @@ class LlmNPC(NPC):
         if "{user}" in full_user_name:
             full_user_name.replace("{user}", user)
         memory = ConversationBufferWindowMemory(
-            k=10, human_prefix=full_user_name, ai_prefix=bot.config.ai_str, memory_key="history", input_key="user_input"
+            k=3, human_prefix=full_user_name, ai_prefix=bot.config.ai_str, memory_key="history", input_key="user_input"
         )
         self.llm_chain = LLMChain(llm=bot.llm, prompt=prompt, verbose=verbose, memory=memory)
         self.user = user

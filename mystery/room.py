@@ -1,16 +1,33 @@
-from dataclasses import dataclass
-from typing import List, Tuple
+from pathlib import Path
+from typing import Tuple
 
 import numpy as np
+import pygame
 from door import Door
-from npc import NPC
 from utils import RoomName
 
 
-@dataclass
 class Room:
-    name: RoomName
-    npcs: List[NPC]
-    doors: List[Door]
-    terrain: np.array
-    background: Tuple
+    def __init__(
+        self,
+        name: RoomName,
+        doors: list[Door],
+        terrain: np.array,
+        background: Tuple,
+        image: Path | None,
+    ):
+        self.name = name
+        self.doors = doors
+        self.terrain = terrain
+        self.background = background
+
+        self.image = None
+        if image is not None:
+            img = pygame.image.load(image)
+            # TODO: Remove hard code
+            self.image = pygame.transform.scale(img, (800, 600))
+
+    def draw(self, screen):
+        screen.fill(self.background)
+        if self.image is not None:
+            screen.blit(self.image, (0, 0))

@@ -15,8 +15,7 @@ class Animation:
     def __init__(
         self, chat_img: Optional[Path] = None, figure_img: Optional[Path] = None, walking_sprites: Optional[Path] = None
     ):
-
-        self.figure_size = (70, 140)
+        self.figure_size = (50, 100)
         self.chat_img = self._load_img(chat_img)
         self.figure_img = self._load_img(figure_img)
         self.last_update_time = pygame.time.get_ticks()

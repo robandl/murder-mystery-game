@@ -72,7 +72,9 @@ def get_llm(model: str) -> Bot:
 
         return Bot(
             llm=OpenAI(temperature=0),
-            config=LlmConfig(user_str="Detective {user}", ai_str="You", instruction_str="Instructions:"),
+            config=LlmConfig(
+                user_str="Detective {user}", ai_str="You", instruction_str="Instructions:", stop_tokens=["Detective"]
+            ),
         )
     elif model == "local":
         stop_tokens = ["###", "Input"]
