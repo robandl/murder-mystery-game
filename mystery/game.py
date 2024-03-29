@@ -3,6 +3,7 @@ from pathlib import Path
 import pygame
 import pygame_gui
 from chat_box import ChatBox
+from end_screen import EndScreen
 from llm import get_llm
 from menu import Menu
 from params import Params
@@ -55,10 +56,11 @@ class Game:
         self.current_room = self.world.get_starting_room()
 
         self.rooms = self.world.create_rooms(params=params)
-        self.player = self.world.create_player(params, rooms=self.rooms, current_room=self.current_room)
+        self.player = self.world.create_player(params, rooms=self.rooms, current_room=self.rooms[self.current_room])
         self.npcs = self.world.create_npcs(rooms=self.rooms, bot=bot, user=user)
 
         self.officer = self.world.create_officer(npcs=self.npcs, rooms=self.rooms)
+        self.judge = self.officer.judge
         #        self.active_npc = None
 
         # buttons
@@ -100,6 +102,9 @@ class Game:
         for npc in self.npcs:
             if npc.chat_open:
                 self.chat_box.draw(screen=screen, npc=npc)
+
+        if self.judge.chat_open:
+            self.chat_box.draw(screen=screen, npc=self.judge)
 
         if not self.chat_box.is_on:
             self.ui_manager.draw_ui(window_surface=screen)
@@ -176,8 +181,10 @@ class Game:
 
 def game_loop():
     current_state = State.MENU
+    # current_state = State.END
     game = Game(config_path=config_path, params=params)
     menu = Menu(params=params)
+    end_screen = EndScreen(params=params)
 
     while True:
         if current_state == State.MENU:
@@ -192,6 +199,10 @@ def game_loop():
                 state=current_state, player_room=game.room, player=game.player, chat_box=game.chat_box
             )
             game.draw(screen=screen)
+
+        elif current_state == State.END:
+            end_screen.draw(screen=screen, num_attempts=game.judge.num_attempts)
+            current_state = end_screen.handle_events(state=current_state)
 
         pygame.display.flip()
 

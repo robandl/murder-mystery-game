@@ -46,7 +46,7 @@ class World:
         npc = [npc for npc in npcs if npc.name == npc_name]
         assert len(npc) == 1, npc
 
-        return Officer(npc=npc[0], exam_path=officer_config["exam"], rooms=rooms)
+        return Officer(npc=npc[0], judge_path=self._get_abs_path(officer_config["judge_path"]), rooms=rooms)
 
     def create_rooms(self, params: Params) -> Dict[RoomName, Room]:
         rooms = {}

@@ -1,0 +1,88 @@
+settings:
+  width: 800
+  height: 600
+  chat_height: 300
+world:
+  #  start_room: HALL
+  start_room: BATHROOM
+  player:
+    start_pos: [400, 300]  # x, y
+    animation:
+      figure_img: "images/player_figure.png"
+      chat_img: "images/player_figure.png"
+      walking_sprites: "images/player_walking"
+  officer:
+      name: Officer Harper
+      judge_path: "prompts/judge"
+  rooms:
+
+    HALL:
+      npcs:
+      - name: Tim Kane
+        start_pos: [200, 220]
+        room: HALL
+        use_llm: true
+        prompt: "prompts/tim.txt"
+        chat_img: "images/tmp_tim_figure.png"
+        figure_img: "images/tmp_tim_figure.png"
+      - name: Bobby Herrerra
+        start_pos: [540, 2180]
+        use_llm: true
+        prompt: "prompts/bobby.txt"
+        chat_img: "images/bobby.png"
+        figure_img: "images/bobby.png"
+      - name: Fiona McAllister
+        start_pos: [200, 400]
+        use_llm: true
+        prompt: "prompts/fiona.txt"
+        chat_img: "images/fiona.png"
+        figure_img: "images/fiona.png"
+      - name: Harold Chun
+        start_pos: [620, 500]
+        use_llm: true
+        prompt: "prompts/harold.txt"
+        chat_img: "images/harold.png"
+        figure_img: "images/harold.png"
+      - name: Margeret Chun
+        start_pos: [560, 480]
+        use_llm: true
+        prompt: "prompts/margaret.txt"
+        chat_img: "images/margaret.png"
+        figure_img: "images/margaret.png"
+      - name: Louis Ferdinand Cagliostro
+        start_pos: [620, 180]
+        use_llm: true
+        prompt: "prompts/louis.txt"
+        chat_img: "images/louis.png"
+        figure_img: "images/louis.png"
+      - name: Pauline Thompson
+        start_pos: [350, 470]
+        use_llm: true
+        prompt: "prompts/pauline.txt"
+        chat_img: "images/pauline.png"
+        figure_img: "images/pauline.png"
+      doors:
+      - out_room: BATHROOM
+        start_pos: [745, 440]
+        img: "images/door_closed.png"
+      terrain: null
+      background: "black"
+      image: "images/saloon.png"
+
+    BATHROOM:
+      npcs:
+      - name: corpse
+        start_pos: [400, 500]
+      - name: Officer Harper
+        start_pos: [580, 180]
+        use_llm: true
+        prompt: "prompts/officer.txt"
+        chat_img: "images/officer.png"
+        figure_img: "images/officer.png"
+      doors:
+      - out_room: HALL
+        start_pos: [135, 440]
+        img: "images/door_closed.png"
+      terrain: null
+      background: "black"
+      image: "images/hallway_with_victim.png"

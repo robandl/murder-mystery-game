@@ -24,7 +24,7 @@ class Room:
         self.image = None
         if image is not None:
             img = pygame.image.load(image)
-            # TODO: Remove hard code
+            # TODO: Remove hard coded room size
             self.image = pygame.transform.scale(img, (800, 600))
 
     def draw(self, screen):

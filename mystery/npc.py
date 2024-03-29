@@ -73,6 +73,7 @@ class LlmNPC(NPC):
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
+        self.bot = bot
 
         prompt = self._load_prompt(prompt_path=prompt_path, config=bot.config, user=user)
 
