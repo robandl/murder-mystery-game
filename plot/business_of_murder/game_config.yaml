@@ -4,7 +4,7 @@ settings:
   chat_height: 300
 world:
   #  start_room: HALL
-  start_room: BATHROOM
+  start_room: RICK_SALOON
   player:
     start_pos: [400, 300]  # x, y
     animation:
@@ -15,12 +15,10 @@ world:
       name: Officer Harper
       judge_path: "prompts/judge"
   rooms:
-
-    HALL:
+    RICK_SALOON:
       npcs:
       - name: Tim Kane
         start_pos: [200, 220]
-        room: HALL
         use_llm: true
         prompt: "prompts/tim.txt"
         chat_img: "images/tmp_tim_figure.png"
@@ -62,14 +60,17 @@ world:
         chat_img: "images/pauline.png"
         figure_img: "images/pauline.png"
       doors:
-      - out_room: BATHROOM
-        start_pos: [745, 440]
+      - out_room: RICK_HALL
+        start_pos: [745, 240]
+        img: "images/door_closed.png"
+      - out_room: RICK_OVERVIEW
+        start_pos: [400, 540]
         img: "images/door_closed.png"
       terrain: null
       background: "black"
-      image: "images/saloon.png"
+      image: "images/rooms/ricks_saloon.png"
 
-    BATHROOM:
+    RICK_HALL:
       npcs:
       - name: corpse
         start_pos: [400, 500]
@@ -80,9 +81,97 @@ world:
         chat_img: "images/officer.png"
         figure_img: "images/officer.png"
       doors:
-      - out_room: HALL
+      - out_room: RICK_SALOON
+        start_pos: [135, 440]
+        img: "images/door_closed.png"
+      - out_room: RICK_BATHROOM
+        start_pos: [745, 440]
+        img: "images/door_closed.png"
+      terrain: null
+      background: "black"
+      image: "images/rooms/rick_hallway.png"
+
+    RICK_BATHROOM:
+      npcs: []
+      doors:
+      - out_room: RICK_HALL
         start_pos: [135, 440]
         img: "images/door_closed.png"
       terrain: null
       background: "black"
-      image: "images/hallway_with_victim.png"
+      image: "images/rooms/rick_bathroom.png"
+
+    RICK_OVERVIEW:
+      npcs: []
+      doors:
+      - out_room: RICK_SALOON
+        start_pos: [350, 300]
+        img: "images/door_closed.png"
+      - out_room: OFFICE_OVERVIEW
+        start_pos: [700, 500]
+        img: "images/door_closed.png"
+      terrain: null
+      background: "black"
+      image: "images/rooms/rick_overview.png"
+
+    OFFICE_OVERVIEW:
+      npcs: []
+      doors:
+      - out_room: RICK_OVERVIEW
+        start_pos: [100, 500]
+        img: "images/door_closed.png"
+      - out_room: OFFICE_HALL
+        start_pos: [350, 300]
+        img: "images/door_closed.png"
+      terrain: null
+      background: "black"
+      image: "images/rooms/office_overview.png"
+
+    OFFICE_HALL:
+      npcs: []
+      doors:
+      - out_room: OFFICE_OVERVIEW
+        start_pos: [350, 450]
+        img: "images/door_closed.png"
+      - out_room: OFFICE_PARTY
+        start_pos: [150, 300]
+        img: "images/door_closed.png"
+      - out_room: OFFICE_RICKS_BUREAU
+        start_pos: [450, 200]
+        img: "images/door_closed.png"
+      - out_room: OFFICE_BATHROOM
+        start_pos: [500, 300]
+        img: "images/door_closed.png"
+      terrain: null
+      background: "black"
+      image: "images/rooms/office_hallway.png"
+
+    OFFICE_PARTY:
+      npcs: []
+      doors:
+      - out_room: OFFICE_HALL
+        start_pos: [650, 450]
+        img: "images/door_closed.png"
+      terrain: null
+      background: "black"
+      image: "images/rooms/office_party.png"
+
+    OFFICE_RICKS_BUREAU:
+      npcs: []
+      doors:
+      - out_room: OFFICE_HALL
+        start_pos: [450, 450]
+        img: "images/door_closed.png"
+      terrain: null
+      background: "black"
+      image: "images/rooms/office_ricks_bureau.png"
+
+    OFFICE_BATHROOM:
+      npcs: []
+      doors:
+      - out_room: OFFICE_HALL
+        start_pos: [150, 250]
+        img: "images/door_closed.png"
+      terrain: null
+      background: "black"
+      image: "images/rooms/office_bathroom.png"
