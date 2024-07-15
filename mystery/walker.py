@@ -1,3 +1,4 @@
+from door import Door
 from room import Room
 from utils import Point2D
 
@@ -23,6 +24,12 @@ class Walker:
         self.npc_collision = npc_collision
         self.door_collision = door_collision
 
+    def _find_mirror_door(self, door: Door, room: Room):
+        for out_door in room.doors:
+            if out_door.in_room == door.out_room and out_door.out_room == door.in_room:
+                return out_door
+        raise ValueError("Mirror door not found")
+
     def move(self, room, npcs=None):
         self.d_pos = Point2D(self.dx, self.dy)
         new_pos = self.pos + self.d_pos * self.speed
@@ -30,11 +37,8 @@ class Walker:
         for door in room.doors:
             if self.collides_with_door(new_pos, door):
                 self.current_room = self.rooms[door.out_room]
-                out_door = next(
-                    out_door
-                    for out_door in self.rooms[self.current_room.name].doors
-                    if out_door.in_room == door.out_room
-                )
+                # saloon
+                out_door = self._find_mirror_door(door, self.current_room)
                 self.pos = out_door.pos
                 offset = Point2D(door.rectangle.width + 10, 0)
                 # Offset to the center after coming out of the door to prevent re-entry
