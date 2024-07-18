@@ -5,6 +5,7 @@ import numpy as np
 import yaml
 from animation import Animation
 from door import Door
+from item import Item
 from llm import Bot
 from npc import NPC, LlmNPC
 from officer import Officer
@@ -87,6 +88,17 @@ class World:
                     npc = NPC(name=name, pos=pos, room=room_name)
                 npcs.append(npc)
         return npcs
+
+    def create_items(self, rooms: list[Room]) -> list[Item]:
+        items = []
+        for room_str, room_config in self.world_config["rooms"].items():
+            room_name = RoomName[room_str.upper()]
+            for item_config in room_config.get("items", []):
+                img_path = self._get_abs_path(item_config.pop("img"))
+                pos = Point2D(*item_config.pop("pos"))
+                item = Item(room=rooms[room_name], pos=pos, img_path=img_path, **item_config)
+                items.append(item)
+        return items
 
     def _create_doors(self, door_configs, in_room: RoomName) -> List[Door]:
         doors = []

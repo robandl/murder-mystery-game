@@ -77,6 +77,9 @@ class Game:
         self.player = self.world.create_player(params, rooms=self.rooms, current_room=self.rooms[self.current_room])
         self.npcs = self.world.create_npcs(rooms=self.rooms, bot=bot, user=user)
 
+        # add items to npcs for now
+        self.npcs += self.world.create_items(rooms=self.rooms)
+
         self.officer = self.world.create_officer(npcs=self.npcs, rooms=self.rooms)
         self.judge = self.officer.judge
         #        self.active_npc = None

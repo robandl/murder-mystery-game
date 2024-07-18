@@ -21,13 +21,13 @@ class NPC:
 
     def draw(self, screen):
 
-        if not self.get_figure_image():
+        if self.get_figure_image() is None:
             color = GREEN if self.chat_open else WHITE
             pygame.draw.circle(screen, color, (int(self.pos.x), int(self.pos.y)), 20)
             return
 
         # TODO: remove hardcode
-        img_size = (40, 60)
+        img_size = self.get_image_size()
         img_pos = (
             int(self.pos.x - img_size[0] / 2),
             int(self.pos.y - img_size[0] / 2),
@@ -58,6 +58,9 @@ class NPC:
         return None
 
     def get_figure_image(self):
+        return None
+
+    def get_image_size(self):
         return None
 
 
@@ -92,6 +95,7 @@ class LlmNPC(NPC):
         self._chat_image = None
         if chat_img is not None:
             self._chat_image = pygame.image.load(chat_img)
+            print(type(self._chat_image))
         self._figure_image = None
         if figure_img is not None:
             self._figure_image = pygame.image.load(figure_img)
@@ -124,3 +128,6 @@ class LlmNPC(NPC):
 
     def get_figure_image(self):
         return self._figure_image
+
+    def get_image_size(self):
+        return [40, 60]

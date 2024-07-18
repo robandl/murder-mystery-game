@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 from enum import Enum
 
+import cv2
+import numpy as np
+
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 BLUE = (0, 0, 255)
@@ -64,3 +67,25 @@ class RoomName(Enum):
     OFFICE_OVERVIEW = "OFFICE_OVERVIEW"
     OFFICE_PARTY = "OFFICE_PARTY"
     OFFICE_RICKS_BUREAU = "OFFICE_RICKS_BUREAU"
+
+
+def draw_contour(img: np.ndarray, color: tuple[int, int, int] = (255, 0, 0), thickness: int = 3):
+    # Extract the alpha channel
+    alpha_channel = img[:, :, 3]
+
+    # Threshold the alpha channel to get a binary mask
+    _, binary_mask = cv2.threshold(alpha_channel, 0, 255, cv2.THRESH_BINARY)
+
+    # Find contours
+    contours, _ = cv2.findContours(binary_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Assuming the largest contour is the object
+    contour = max(contours, key=cv2.contourArea)
+
+    # Optionally visualize the result
+    #    img_with_contour = cv2.cvtColor(img[:, :, :3], cv2.COLOR_BGR2RGB)
+    img_with_contour = cv2.cvtColor(img[:, :, :3], cv2.COLOR_BGR2RGB)
+    img_with_contour = cv2.drawContours(img_with_contour, [contour], -1, color, thickness)
+    img_with_contour = cv2.cvtColor(img_with_contour, cv2.COLOR_RGB2BGR)
+    img_with_contour = np.concatenate([img_with_contour, img[:, :, 3:]], axis=-1)
+    return img_with_contour

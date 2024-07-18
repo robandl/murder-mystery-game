@@ -59,6 +59,12 @@ world:
         prompt: "prompts/pauline.txt"
         chat_img: "images/pauline.png"
         figure_img: "images/pauline.png"
+      items:
+      - name: "Paper weight"
+        description: "This is some text"
+        pos: [200, 200]
+        img_size: [50, 50]
+        img: "images/items/marble_paperweight.png"
       doors:
       - out_room: RICK_HALL
         start_pos: [745, 190]
