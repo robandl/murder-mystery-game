@@ -95,7 +95,12 @@ class World:
             out_room = RoomName[door_config["out_room"].upper()]
             img_path = self._get_abs_path(door_config.get("img"))
             assert out_room != in_room
-            door = Door(pos=pos, in_room=in_room, out_room=out_room, img_path=img_path)
+            # TODO clean up config readers
+            polygon = door_config.get("polygon", None)
+            if polygon is not None:
+                polygon = [Point2D(x=x, y=y) for x, y in polygon]
+
+            door = Door(pos=pos, in_room=in_room, out_room=out_room, img_path=img_path, polygon=polygon)
             doors.append(door)
         return doors
 

@@ -5,6 +5,7 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 BLUE = (0, 0, 255)
 GREEN = (0, 255, 0)
+RED = (255, 0, 0)
 
 
 @dataclass
@@ -40,6 +41,9 @@ class Point2D:
         elif isinstance(other, Point2D):  # pointwise division
             return Point2D(self.x / other.x, self.y / other.y)
         raise ValueError("Unsupported type for division")
+
+    def to_tuple(self):
+        return self.x, self.y
 
 
 @dataclass

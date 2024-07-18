@@ -61,8 +61,9 @@ world:
         figure_img: "images/pauline.png"
       doors:
       - out_room: RICK_HALL
-        start_pos: [745, 240]
-        img: "images/door_closed.png"
+        start_pos: [745, 190]
+        polygon: [[-5, -25], [30, -40], [30, 20], [-5, 35]]
+
       - out_room: RICK_OVERVIEW
         start_pos: [400, 540]
         img: "images/door_closed.png"
@@ -86,7 +87,6 @@ world:
         img: "images/door_closed.png"
       - out_room: RICK_BATHROOM
         start_pos: [745, 440]
-        img: "images/door_closed.png"
       terrain: null
       background: "black"
       image: "images/rooms/rick_hallway.png"
