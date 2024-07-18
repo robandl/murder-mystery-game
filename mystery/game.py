@@ -11,7 +11,7 @@ from pygame.constants import K_DOWN, K_ESCAPE, K_LEFT, K_RETURN, K_RIGHT, K_SPAC
 from pygame.event import Event
 from pygame_gui.elements import UIButton
 from state import State
-from utils import Point2D
+from utils import WHITE, Point2D
 from world import World
 
 # Initialize Pygame
@@ -27,6 +27,24 @@ pygame.display.set_caption("Mystery Dinner")
 # bot = get_llm("chat_gpt")
 bot = get_llm("local")
 user = "R.A."
+
+
+def draw_distance_grid(screen: pygame.Surface):
+    # Draw grid lines
+    grid_size = 50
+    for x in range(0, screen.get_width(), grid_size):
+        pygame.draw.line(screen, WHITE, (x, 0), (x, screen.get_height()))
+        # Draw the pixel number
+        font = pygame.font.Font(None, 20)
+        text = font.render(str(x), True, WHITE)
+        screen.blit(text, (x, 0))
+
+    for y in range(0, screen.get_height(), grid_size):
+        pygame.draw.line(screen, WHITE, (0, y), (screen.get_width(), y))
+        # Draw the pixel number
+        font = pygame.font.Font(None, 20)
+        text = font.render(str(y), True, WHITE)
+        screen.blit(text, (0, y))
 
 
 class Game:
@@ -110,6 +128,7 @@ class Game:
             self.ui_manager.draw_ui(window_surface=screen)
         self.ui_manager.update(0.005)
         self.chat_box.ui_manager.update(0.005)
+        draw_distance_grid(screen)
 
     def handle_player_movement(self, event: Event):
         if event.key == K_UP:
