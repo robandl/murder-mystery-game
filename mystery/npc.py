@@ -1,14 +1,26 @@
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
+import cv2
 import pygame
 from langchain import LLMChain
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.prompts import PromptTemplate
 from llm import Bot, LlmConfig
+from pygame.surface import Surface
 from room import Room
-from utils import GREEN, WHITE, Point2D
+from utils import GREEN, WHITE, Point2D, draw_contour
+
+
+def load_contour_image(img_path: Path) -> Surface:
+    img = cv2.imread(str(img_path), cv2.IMREAD_UNCHANGED)
+    img_with_contour = draw_contour(img, thickness=20)
+    # TODO: how to load surface directly from numpy with alpha channel?
+    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+        cv2.imwrite(f.name, img_with_contour)
+        return pygame.image.load(f.name)
 
 
 @dataclass
@@ -95,10 +107,9 @@ class LlmNPC(NPC):
         self._chat_image = None
         if chat_img is not None:
             self._chat_image = pygame.image.load(chat_img)
-            print(type(self._chat_image))
         self._figure_image = None
         if figure_img is not None:
-            self._figure_image = pygame.image.load(figure_img)
+            self._figure_image = load_contour_image(figure_img)
 
     def _load_prompt(self, prompt_path, config: LlmConfig, user: str):
         with open(prompt_path, 'r') as file:

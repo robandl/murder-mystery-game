@@ -71,8 +71,8 @@ world:
         polygon: [[-5, -25], [30, -40], [30, 20], [-5, 35]]
 
       - out_room: RICK_OVERVIEW
-        start_pos: [400, 540]
-        img: "images/door_closed.png"
+        start_pos: [420, 540]
+        polygon: [[-82, 0], [80, 0], [77, 38], [-107, 38]]
       terrain: null
       background: "black"
       image: "images/rooms/ricks_saloon.png"
