@@ -3,7 +3,6 @@ settings:
   height: 600
   chat_height: 300
 world:
-  #  start_room: HALL
   start_room: RICK_SALOON
   player:
     start_pos: [400, 300]  # x, y
@@ -67,12 +66,10 @@ world:
         img: "images/items/marble_paperweight.png"
       doors:
       - out_room: RICK_HALL
-        start_pos: [745, 190]
-        polygon: [[-5, -25], [30, -40], [30, 20], [-5, 35]]
+        polygon: [[740, 165], [775, 150], [775, 210], [740, 225]]
 
       - out_room: RICK_OVERVIEW
-        start_pos: [420, 540]
-        polygon: [[-82, 0], [80, 0], [77, 38], [-107, 38]]
+        polygon: [[338, 540], [500, 540], [495, 578], [308, 578]]
       terrain: null
       background: "black"
       image: "images/rooms/ricks_saloon.png"
@@ -89,10 +86,9 @@ world:
         figure_img: "images/officer.png"
       doors:
       - out_room: RICK_SALOON
-        start_pos: [135, 440]
-        img: "images/door_closed.png"
+        polygon: [[113, 262], [113, 397], [46, 420], [47, 250]]
       - out_room: RICK_BATHROOM
-        start_pos: [745, 440]
+        polygon: [[672, 267], [672, 400], [753, 426], [752, 255]]
       terrain: null
       background: "black"
       image: "images/rooms/rick_hallway.png"
@@ -101,8 +97,7 @@ world:
       npcs: []
       doors:
       - out_room: RICK_HALL
-        start_pos: [135, 440]
-        img: "images/door_closed.png"
+        polygon: [[110, 260], [110, 355], [47, 367], [47, 253]]
       terrain: null
       background: "black"
       image: "images/rooms/rick_bathroom.png"
@@ -111,11 +106,9 @@ world:
       npcs: []
       doors:
       - out_room: RICK_SALOON
-        start_pos: [350, 300]
-        img: "images/door_closed.png"
+        polygon: [[300, 296], [330, 296], [330, 288], [295, 288]]
       - out_room: OFFICE_OVERVIEW
-        start_pos: [700, 500]
-        img: "images/door_closed.png"
+        polygon: [[750, 420], [750, 515], [770, 515], [770, 420]]
       terrain: null
       background: "black"
       image: "images/rooms/rick_overview.png"
@@ -124,11 +117,9 @@ world:
       npcs: []
       doors:
       - out_room: RICK_OVERVIEW
-        start_pos: [100, 500]
-        img: "images/door_closed.png"
+        polygon: [[40, 400], [40, 490], [20, 490], [20, 400]]
       - out_room: OFFICE_HALL
-        start_pos: [350, 300]
-        img: "images/door_closed.png"
+        polygon: [[476, 297], [520, 297], [520, 303], [476, 303]]
       terrain: null
       background: "black"
       image: "images/rooms/office_overview.png"
@@ -137,17 +128,13 @@ world:
       npcs: []
       doors:
       - out_room: OFFICE_OVERVIEW
-        start_pos: [350, 450]
-        img: "images/door_closed.png"
+        polygon: [[356, 520], [453, 520], [460, 570], [345, 570]]
       - out_room: OFFICE_PARTY
-        start_pos: [150, 300]
-        img: "images/door_closed.png"
+        polygon: [[28, 194], [28, 390], [80, 370], [80, 199]]
       - out_room: OFFICE_RICKS_BUREAU
-        start_pos: [450, 200]
-        img: "images/door_closed.png"
+        polygon: [[632, 55], [684, 55], [725, 25], [665, 25]]
       - out_room: OFFICE_BATHROOM
-        start_pos: [500, 300]
-        img: "images/door_closed.png"
+        polygon: [[729, 150], [729, 245], [776, 247], [775, 138]]
       terrain: null
       background: "black"
       image: "images/rooms/office_hallway.png"
@@ -156,8 +143,7 @@ world:
       npcs: []
       doors:
       - out_room: OFFICE_HALL
-        start_pos: [650, 450]
-        img: "images/door_closed.png"
+        polygon: [[749, 370], [749, 460], [780, 480], [780, 375]]
       terrain: null
       background: "black"
       image: "images/rooms/office_party.png"
@@ -166,8 +152,7 @@ world:
       npcs: []
       doors:
       - out_room: OFFICE_HALL
-        start_pos: [450, 450]
-        img: "images/door_closed.png"
+        polygon: [[409, 509], [560, 509], [606, 565], [426, 565]]
       terrain: null
       background: "black"
       image: "images/rooms/office_ricks_bureau.png"
@@ -176,8 +161,7 @@ world:
       npcs: []
       doors:
       - out_room: OFFICE_HALL
-        start_pos: [150, 250]
-        img: "images/door_closed.png"
+        polygon: [[54, 145], [52, 247], [136, 259], [138, 173]]
       terrain: null
       background: "black"
       image: "images/rooms/office_bathroom.png"

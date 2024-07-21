@@ -1,6 +1,15 @@
 from door import Door
 from room import Room
+
+# TODO: Remove shapely requirement for polygon collision
+from shapely.geometry import Point
+from shapely.geometry.polygon import Polygon
 from utils import Point2D
+
+
+def point_in_polygon(point: Point2D, polygon: list[float]):
+    polygon = Polygon([p.to_tuple() for p in polygon])
+    return polygon.contains(Point(point.x, point.y))
 
 
 class Walker:
@@ -14,7 +23,7 @@ class Walker:
         door_collision: bool = True,
     ):
         self.pos = pos
-        self.speed = 0.65
+        self.speed = 1.0
         self.dx = 0
         self.dy = 0
         self.rooms = rooms
@@ -39,13 +48,7 @@ class Walker:
                 self.current_room = self.rooms[door.out_room]
                 # saloon
                 out_door = self._find_mirror_door(door, self.current_room)
-                self.pos = out_door.pos
-                offset = Point2D(door.rectangle.width + 10, 0)
-                # Offset to the center after coming out of the door to prevent re-entry
-                # TODO: Remove hardcoded screen 'width/2'
-
-                offset = offset if self.pos.x < 400 else offset * -1
-                self.pos += offset
+                self.pos = out_door.get_safe_exit_pos()
                 self.current_room = self.rooms[door.out_room]
                 return self.current_room.name
 
@@ -78,7 +81,12 @@ class Walker:
         return distance <= self.params.NPC_RADIUS
 
     def collides_with_door(self, pos, door):
-        return (
-            door.rectangle.top_left.x <= pos.x <= door.rectangle.top_left.x + door.rectangle.width
-            and door.rectangle.top_left.y <= pos.y <= door.rectangle.top_left.y + door.rectangle.height
-        )
+        if door.polygon is not None:
+            return point_in_polygon(pos, door.polygon)
+        elif door.pos is not None:
+            return (
+                door.rectangle.top_left.x <= pos.x <= door.rectangle.top_left.x + door.rectangle.width
+                and door.rectangle.top_left.y <= pos.y <= door.rectangle.top_left.y + door.rectangle.height
+            )
+        else:
+            raise ValueError("Door must have either pos or polygon")
