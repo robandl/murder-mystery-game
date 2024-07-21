@@ -1,4 +1,5 @@
 import math
+from collections import deque
 from enum import Enum, auto
 from pathlib import Path
 
@@ -10,6 +11,35 @@ from room import Room
 from state import State
 from utils import Point2D, RoomName
 from walker import Walker
+
+
+def bfs_shortest_path(graph, start, target):
+    """breadth-first search to find the shortest path from start to target by ChatGPT"""
+    # A queue to store the paths
+    queue = deque([[start]])
+    # A set to store visited nodes
+    visited = set()
+    while queue:
+        # Get the first path from the queue
+        path = queue.popleft()
+        # Get the last node from the path
+        node = path[-1]
+        # If the node is the target, return the path
+        if node == target:
+            return path
+        # If the node has not been visited
+        if node not in visited:
+            # Mark the node as visited
+            visited.add(node)
+
+            # Enumerate all adjacent nodes, construct a new path, and push it into the queue
+            for neighbor in graph.get(node, []):
+                new_path = list(path)
+                new_path.append(neighbor)
+                queue.append(new_path)
+
+    # If there's no path from start to target
+    return None
 
 
 class OfficerState(Enum):
@@ -31,6 +61,7 @@ class Officer(Walker):
         npc: NPC | LlmNPC,
         judge_path: Path,
         rooms: list[Room],
+        room_graph: dict[RoomName, list[RoomName]],
     ):
 
         super().__init__(
@@ -41,6 +72,7 @@ class Officer(Walker):
             npc_collision=False,
             door_collision=True,
         )
+        self.room_graph = room_graph
 
         self.npc = npc
         self.npc_history_backup = None
@@ -53,22 +85,27 @@ class Officer(Walker):
         self.judge = Judge(bot=npc.bot, judge_path=judge_path, user=npc.user)
         self.npc_backup = None
 
-    def _find_door(self, current_room: Room, target_room_name: RoomName) -> Point2D:
+    def _find_next_target_room(self, current_room: Room, target_room_name: RoomName) -> RoomName:
+        path = bfs_shortest_path(self.room_graph, current_room.name, target_room_name)
+        assert path is not None, f"Could not find path from {current_room.name} to {target_room_name}"
+        return path[1]
+
+    def _find_next_target_door(self, current_room: Room, target_room_name: RoomName) -> Point2D:
         door = next((door for door in current_room.doors if door.out_room == target_room_name), None)
         assert door is not None, f"Could not find door in room {current_room.name} to {target_room_name}"
-        door_pos = Point2D(
-            door.rectangle.top_left.x + door.rectangle.width / 2, door.rectangle.top_left.y + door.rectangle.height / 2
-        )
+        door_pos = door.get_door_pos()
         return door_pos
 
     def _walk(self, player_room: Room, player: Player, target_pos: Point2D):
 
         if self.officer_state == OfficerState.MOVE_TO:
             if player_room.name != self.npc.room.name:
-                target_pos = self._find_door(self.npc.room, player_room.name)
+                target_room = self._find_next_target_room(self.npc.room, player_room.name)
+                target_pos = self._find_next_target_door(self.npc.room, target_room)
         elif self.officer_state == OfficerState.MOVE_BACK:
             if self.npc.room.name != self.origin_room.name:
-                target_pos = self._find_door(self.npc.room, self.origin_room.name)
+                target_room = self._find_next_target_room(self.npc.room, self.origin_room.name)
+                target_pos = self._find_next_target_door(self.npc.room, target_room)
         else:
             raise NotImplementedError(self.officer_state)
 

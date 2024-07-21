@@ -41,13 +41,15 @@ class World:
             current_room=current_room,
         )
 
-    def create_officer(self, npcs: list[NPC], rooms: list[Room]) -> Officer:
+    def create_officer(self, npcs: list[NPC], rooms: list[Room], room_graph: dict[RoomName, list[RoomName]]) -> Officer:
         officer_config = self.world_config["officer"]
         npc_name = officer_config["name"]
         npc = [npc for npc in npcs if npc.name == npc_name]
         assert len(npc) == 1, npc
 
-        return Officer(npc=npc[0], judge_path=self._get_abs_path(officer_config["judge_path"]), rooms=rooms)
+        return Officer(
+            npc=npc[0], judge_path=self._get_abs_path(officer_config["judge_path"]), rooms=rooms, room_graph=room_graph
+        )
 
     def create_rooms(self, params: Params) -> Dict[RoomName, Room]:
         rooms = {}
@@ -103,12 +105,14 @@ class World:
     def _create_doors(self, door_configs, in_room: RoomName) -> List[Door]:
         doors = []
         for door_config in door_configs:
-            pos = Point2D(*door_config["start_pos"])
+            pos = door_config.get("start_pos")
+            if pos is not None:
+                pos = Point2D(*pos)
             out_room = RoomName[door_config["out_room"].upper()]
             img_path = self._get_abs_path(door_config.get("img"))
             assert out_room != in_room
             # TODO clean up config readers
-            polygon = door_config.get("polygon", None)
+            polygon = door_config.get("polygon")
             if polygon is not None:
                 polygon = [Point2D(x=x, y=y) for x, y in polygon]
 
@@ -132,3 +136,10 @@ class World:
         terrain_mask[:, :5] = True  # Left frame
         terrain_mask[:, -5:] = True  # Right frame
         return terrain_mask
+
+    @staticmethod
+    def create_room_graph(rooms: dict[RoomName, Room]) -> Dict[RoomName, List[RoomName]]:
+        graph = {}
+        for room_name, room in rooms.items():
+            graph[room_name] = [door.out_room for door in room.doors]
+        return graph

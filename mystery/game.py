@@ -14,6 +14,8 @@ from state import State
 from utils import WHITE, Point2D
 from world import World
 
+DRAW_GRID = False
+
 # Initialize Pygame
 pygame.init()
 config_path = Path(__file__).resolve().parent.parent / "plot" / "business_of_murder" / "game_config.yaml"
@@ -22,7 +24,6 @@ params = Params.from_config(config_path)
 # Set up the display
 screen = pygame.display.set_mode((params.WIDTH, params.HEIGHT + params.CHAT_HEIGHT))
 pygame.display.set_caption("Mystery Dinner")
-
 
 # bot = get_llm("chat_gpt")
 bot = get_llm("local")
@@ -74,13 +75,14 @@ class Game:
         self.current_room = self.world.get_starting_room()
 
         self.rooms = self.world.create_rooms(params=params)
+        self.room_graph = self.world.create_room_graph(rooms=self.rooms)
         self.player = self.world.create_player(params, rooms=self.rooms, current_room=self.rooms[self.current_room])
         self.npcs = self.world.create_npcs(rooms=self.rooms, bot=bot, user=user)
 
         # add items to npcs for now
         self.npcs += self.world.create_items(rooms=self.rooms)
 
-        self.officer = self.world.create_officer(npcs=self.npcs, rooms=self.rooms)
+        self.officer = self.world.create_officer(npcs=self.npcs, rooms=self.rooms, room_graph=self.room_graph)
         self.judge = self.officer.judge
         #        self.active_npc = None
 
@@ -131,7 +133,9 @@ class Game:
             self.ui_manager.draw_ui(window_surface=screen)
         self.ui_manager.update(0.005)
         self.chat_box.ui_manager.update(0.005)
-        draw_distance_grid(screen)
+
+        if DRAW_GRID:
+            draw_distance_grid(screen)
 
     def handle_player_movement(self, event: Event):
         if event.key == K_UP:
