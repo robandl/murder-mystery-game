@@ -121,6 +121,10 @@ class LlmNPC(NPC):
         prompt = prompt.replace("{user}", user)
         return prompt
 
+    def open_chat(self):
+        self.chat_history += f"<font color=#E0C834>You're talking with {self.name}.\n</font>"
+        return super().open_chat()
+
     def chat(self, new_message):
         assert self.chat_open
         self.chat_history += f"Detective {self.user}: {new_message}\n"

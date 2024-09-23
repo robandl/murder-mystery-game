@@ -54,13 +54,21 @@ class World:
     def create_rooms(self, params: Params) -> Dict[RoomName, Room]:
         rooms = {}
         for room_str, room_config in self.world_config["rooms"].items():
+            pretty_name = room_config.get("pretty_name")
             room_name = RoomName[room_str.upper()]
             doors = self._create_doors(room_config.get("doors", []), in_room=room_name)
             background = self._get_background(room_config["background"])
             terrain = self._create_terrain(params=params)
             image = self._get_abs_path(room_config["image"]) if "image" in room_config else None
 
-            rooms[room_name] = Room(name=room_name, doors=doors, terrain=terrain, background=background, image=image)
+            rooms[room_name] = Room(
+                name=room_name,
+                doors=doors,
+                terrain=terrain,
+                background=background,
+                image=image,
+                pretty_name=pretty_name,
+            )
         return rooms
 
     def create_npcs(self, rooms: list[Room], bot: Bot, user: str) -> List[NPC]:

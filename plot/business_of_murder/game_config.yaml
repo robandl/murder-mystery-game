@@ -1,6 +1,6 @@
 settings:
   width: 800
-  height: 600
+  height: 650
   chat_height: 300
 world:
   start_room: RICK_SALOON
@@ -15,6 +15,7 @@ world:
       judge_path: "prompts/judge"
   rooms:
     RICK_SALOON:
+      pretty_name: Rick's Saloon
       npcs:
       - name: Tim Kane
         start_pos: [200, 220]
@@ -62,7 +63,8 @@ world:
       - name: "Paper weight"
         description: "This is some text"
         pos: [200, 200]
-        img_size: [50, 50]
+          # img_size: [50, 50]
+        img_size: [20, 20]
         img: "images/items/marble_paperweight.png"
       doors:
       - out_room: RICK_HALL
@@ -75,6 +77,7 @@ world:
       image: "images/rooms/ricks_saloon.png"
 
     RICK_HALL:
+      pretty_name: Rick's Hallway
       npcs:
       - name: corpse
         start_pos: [400, 500]
@@ -89,11 +92,23 @@ world:
         polygon: [[113, 262], [113, 397], [46, 420], [47, 250]]
       - out_room: RICK_BATHROOM
         polygon: [[672, 267], [672, 400], [753, 426], [752, 255]]
+      items:
+      - name: "Dead body of Rick Martin"
+        description: ""
+        pos: [500, 300]
+        img_size: [75, 123]
+        img: "images/items/victim_segmented.png"
+      - name: "Open fire door"
+        description: ""
+        pos: [252, 80]
+        img_size: [40, 30]
+        img: "images/items/open_door.png"
       terrain: null
       background: "black"
       image: "images/rooms/rick_hallway.png"
 
     RICK_BATHROOM:
+      pretty_name: Rick's Bathroom
       npcs: []
       doors:
       - out_room: RICK_HALL
@@ -103,6 +118,7 @@ world:
       image: "images/rooms/rick_bathroom.png"
 
     RICK_OVERVIEW:
+      pretty_name: Rick's House
       npcs: []
       doors:
       - out_room: RICK_SALOON
@@ -114,6 +130,7 @@ world:
       image: "images/rooms/rick_overview.png"
 
     OFFICE_OVERVIEW:
+      pretty_name: The Office
       npcs: []
       doors:
       - out_room: RICK_OVERVIEW
@@ -125,6 +142,7 @@ world:
       image: "images/rooms/office_overview.png"
 
     OFFICE_HALL:
+      pretty_name: Office Entrance
       npcs: []
       doors:
       - out_room: OFFICE_OVERVIEW
@@ -140,6 +158,7 @@ world:
       image: "images/rooms/office_hallway.png"
 
     OFFICE_PARTY:
+      pretty_name: Office Party
       npcs: []
       doors:
       - out_room: OFFICE_HALL
@@ -149,6 +168,7 @@ world:
       image: "images/rooms/office_party.png"
 
     OFFICE_RICKS_BUREAU:
+      pretty_name: Rick's and Tim's Office
       npcs: []
       doors:
       - out_room: OFFICE_HALL
@@ -158,6 +178,7 @@ world:
       image: "images/rooms/office_ricks_bureau.png"
 
     OFFICE_BATHROOM:
+      pretty_name: Office Bathroom
       npcs: []
       doors:
       - out_room: OFFICE_HALL
