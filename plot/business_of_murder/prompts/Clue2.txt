@@ -1,7 +1,2 @@
-CLUE 2/4: The Murder Weapon
-
-Lying on the floor is a marble paperweight, which is marked
-with blood and some hairs and skin which stuck to it.  This is apparently
-the murder weapon.
-
-Ask people from the party if they recognise the murder weapon.
+CLUE 2/4 - The Murder Weapon:
+Lying on the floor is a marble paperweight, which is marked with blood and some hairs and skin which stuck to it. This is apparently the murder weapon. Ask people from the party if they recognise the murder weapon.

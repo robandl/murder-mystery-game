@@ -12,11 +12,16 @@ class Item(NPC):
         name: str,
         pos: Point2D,
         room: Room,
-        description: str,
+        prompt: str | None,
         img_path: Path,
         img_size: list[int, int] = [50, 50],
     ):
-        super().__init__(name=name, pos=pos, room=room, chat_history=self._get_chat_history(description))
+        if prompt is not None:
+            with open(prompt, 'r') as file:
+                prompt = file.read().rstrip("\n")
+        else:
+            prompt = ""
+        super().__init__(name=name, pos=pos, room=room, chat_history=self._get_chat_history(prompt))
 
         self._img = load_contour_image(img_path)
         self._chat_img = pygame.image.load(str(img_path))

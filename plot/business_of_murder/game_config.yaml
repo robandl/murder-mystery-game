@@ -5,7 +5,7 @@ settings:
 world:
   start_room: RICK_SALOON
   player:
-    start_pos: [400, 300]  # x, y
+    start_pos: [400, 450]  # x, y
     animation:
       figure_img: "images/player_figure.png"
       chat_img: "images/player_figure.png"
@@ -18,13 +18,13 @@ world:
       pretty_name: Rick's Saloon
       npcs:
       - name: Tim Kane
-        start_pos: [200, 220]
+        start_pos: [225, 220]
         use_llm: true
         prompt: "prompts/tim.txt"
         chat_img: "images/tmp_tim_figure.png"
         figure_img: "images/tmp_tim_figure.png"
       - name: Bobby Herrerra
-        start_pos: [540, 2180]
+        start_pos: [400, 310]
         use_llm: true
         prompt: "prompts/bobby.txt"
         chat_img: "images/bobby.png"
@@ -36,7 +36,7 @@ world:
         chat_img: "images/fiona.png"
         figure_img: "images/fiona.png"
       - name: Harold Chun
-        start_pos: [620, 500]
+        start_pos: [620, 350]
         use_llm: true
         prompt: "prompts/harold.txt"
         chat_img: "images/harold.png"
@@ -54,18 +54,11 @@ world:
         chat_img: "images/louis.png"
         figure_img: "images/louis.png"
       - name: Pauline Thompson
-        start_pos: [350, 470]
+        start_pos: [380, 170]
         use_llm: true
         prompt: "prompts/pauline.txt"
         chat_img: "images/pauline.png"
         figure_img: "images/pauline.png"
-      items:
-      - name: "Paper weight"
-        description: "This is some text"
-        pos: [200, 200]
-          # img_size: [50, 50]
-        img_size: [20, 20]
-        img: "images/items/marble_paperweight.png"
       doors:
       - out_room: RICK_HALL
         polygon: [[740, 165], [775, 150], [775, 210], [740, 225]]
@@ -94,15 +87,25 @@ world:
         polygon: [[672, 267], [672, 400], [753, 426], [752, 255]]
       items:
       - name: "Dead body of Rick Martin"
-        description: ""
+        prompt: "prompts/Clue1.txt"
         pos: [500, 300]
         img_size: [75, 123]
         img: "images/items/victim_segmented.png"
+      - name: "Paper weight"
+        prompt: "prompts/Clue2.txt"
+        pos: [350, 250]
+        img_size: [25, 25]
+        img: "images/items/marble_paperweight.png"
       - name: "Open fire door"
-        description: ""
+        prompt: "prompts/Clue4.txt"
         pos: [252, 80]
         img_size: [40, 30]
         img: "images/items/open_door.png"
+      - name: "Note on the floor"
+        prompt: "prompts/Clue3.txt"
+        pos: [400, 350]
+        img_size: [20, 20]
+        img: "images/items/paper_note_segmented.png"
       terrain: null
       background: "black"
       image: "images/rooms/rick_hallway.png"

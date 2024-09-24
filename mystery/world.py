@@ -105,8 +105,9 @@ class World:
             room_name = RoomName[room_str.upper()]
             for item_config in room_config.get("items", []):
                 img_path = self._get_abs_path(item_config.pop("img"))
+                prompt = self._get_abs_path(item_config.pop("prompt")) if "prompt" in item_config else None
                 pos = Point2D(*item_config.pop("pos"))
-                item = Item(room=rooms[room_name], pos=pos, img_path=img_path, **item_config)
+                item = Item(room=rooms[room_name], pos=pos, img_path=img_path, prompt=prompt, **item_config)
                 items.append(item)
         return items
 
