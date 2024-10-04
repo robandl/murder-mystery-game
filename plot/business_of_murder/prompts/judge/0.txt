@@ -7,11 +7,11 @@ The player is now asked to answer the question:
 "Who was the murderer?"
 
 Here is the ideal answer to that question:
-"The murder was Tim Kane who murdered Rick Martin by hitting him was a paper weight on the head"
+"The murder was Tim Kane who murdered Rick Martin by hitting him with a paper weight on the head"
 
 You will now evaluate the answer.
-Your task is to write one of two tokens and an answer sentence. The tokens kann either be "<passed>" or "<failed>".
-A "<passed>" should be given if the answer indentifies Tim Kane as a the murderer. Note that answering his first or last name only is fine and the way how it was done also doesn't matter.
+Your task is to write one of two tokens and an answer sentence. The tokens can either be "<passed>" or "<failed>".
+A "<passed>" should be given if the answer indentifies Tim Kane as the murderer. Note that answering his first or last name only is fine and the way how it was done also doesn't matter.
 A <failed> should be given in all other cases.
 If a <passed> is given, you can e.g. confirm the answer after the token or add details.
 If a <failed> token is given, you should explain that the answer is wrong WITHOUT revealing who the real murderer was. Again, DO NOT REVEAL THAT TIM KANE WAS THE MURDER.
@@ -30,8 +30,8 @@ Examples:
 {ai_str}: <passed> That is correct. Tim Kane murdered Mr Martin by hitting him with a paper weight on the head.
 
 ----------
-{user_str}: I believe the murder commited suicide
-{ai_str}: <failed> That does not make any sense. The murderer must still be out there
+{user_str}: I believe Rick Martin commited suicide
+{ai_str}: <failed> That does not make any sense. The murderer must still be out there.
 
 Now, please rate the answer of Detective {user}:
 ----------

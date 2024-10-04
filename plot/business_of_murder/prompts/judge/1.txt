@@ -7,7 +7,7 @@ The player is now asked to answer the question:
 "Why did the murderer kill Rick? What was his/her motive?"
 
 Here is the ideal answer to that question:
-"Tim Kane murdered Rick Martin out of greed. Tim Kane was in debt and desperately needed money. When he heard that Rick had found a money machine in option pricing. Together with his Partner Pauline Thompson, they had used it the last 2 years to make a fortune. The method was saved on a data disk which Tim knew that Rick was having in his pocket that day. Tim's plan was to knock out Rick with the paper weight and steal the disk to pay off his debt. However, he accidantely murdered Rick when he hit his head and Rick crashed his head on the floor"
+"Tim Kane murdered Rick Martin out of greed. Tim Kane was in debt and desperately needed money. On the party he heard that Rick had found a money machine in option pricing. Together with his Partner Pauline Thompson they had used it the last 2 years to make a fortune. The method was saved on a data disk which Tim knew that Rick had in his pocket when he went to the bathroom. Tim's plan was to knock out Rick with the paper weight and steal the disk to pay off his debt. However, he accidantely murdered Rick when he hit his head and Rick crashed his head on the floor"
 
 You will now evaluate the answer.
 Your task is to write one of two tokens and an answer sentence. The tokens kann either be "<passed>" or "<failed>".

@@ -3,6 +3,8 @@ settings:
   height: 650
   chat_height: 300
 world:
+  tutorial:
+    prompt: "prompts/tutorial"
   start_room: RICK_SALOON
   player:
     start_pos: [400, 450]  # x, y
@@ -103,7 +105,7 @@ world:
         img: "images/items/open_door.png"
       - name: "Note on the floor"
         prompt: "prompts/Clue3.txt"
-        pos: [400, 350]
+        pos: [460, 420]
         img_size: [20, 20]
         img: "images/items/paper_note_segmented.png"
       terrain: null
@@ -130,7 +132,7 @@ world:
         polygon: [[750, 420], [750, 515], [770, 515], [770, 420]]
       terrain: null
       background: "black"
-      image: "images/rooms/rick_overview.png"
+      image: "images/rooms/rick_overview_w_text.png"
 
     OFFICE_OVERVIEW:
       pretty_name: The Office
@@ -142,7 +144,7 @@ world:
         polygon: [[476, 297], [520, 297], [520, 303], [476, 303]]
       terrain: null
       background: "black"
-      image: "images/rooms/office_overview.png"
+      image: "images/rooms/office_overview_w_text.png"
 
     OFFICE_HALL:
       pretty_name: Office Entrance
@@ -158,7 +160,7 @@ world:
         polygon: [[729, 150], [729, 245], [776, 247], [775, 138]]
       terrain: null
       background: "black"
-      image: "images/rooms/office_hallway.png"
+      image: "images/rooms/office_hallway_w_text.png"
 
     OFFICE_PARTY:
       pretty_name: Office Party
