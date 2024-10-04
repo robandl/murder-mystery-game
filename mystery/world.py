@@ -12,6 +12,7 @@ from officer import Officer
 from params import Params
 from player import Player
 from room import Room
+from tutorial_window import TutorialWindow
 from utils import BLACK, BLUE, Point2D, RoomName
 
 
@@ -110,6 +111,12 @@ class World:
                 item = Item(room=rooms[room_name], pos=pos, img_path=img_path, prompt=prompt, **item_config)
                 items.append(item)
         return items
+
+    def create_tutorial_window(self, params: Params) -> TutorialWindow:
+        config = self.world_config.get("tutorial", None)
+        assert config is not None, "No tutorial config found"
+        prompt_path = self._get_abs_path(config["prompt"])
+        return TutorialWindow(params=params, prompt_path=prompt_path)
 
     def _create_doors(self, door_configs, in_room: RoomName) -> List[Door]:
         doors = []

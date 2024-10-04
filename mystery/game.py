@@ -7,7 +7,7 @@ from end_screen import EndScreen
 from llm import get_llm
 from menu import Menu
 from params import Params
-from pygame.constants import K_DOWN, K_ESCAPE, K_LEFT, K_RETURN, K_RIGHT, K_SPACE, K_UP, KEYDOWN, KEYUP, QUIT, K_m
+from pygame.constants import K_DOWN, K_ESCAPE, K_LEFT, K_RETURN, K_RIGHT, K_SPACE, K_UP, KEYDOWN, KEYUP, QUIT, K_h, K_m
 from pygame.event import Event
 from pygame_gui.elements import UIButton
 from state import State
@@ -91,16 +91,32 @@ class Game:
         self.exam_button_text = '[ENTER] "I\'ve found the murderer"'
         self.exam_button = UIButton(pygame.Rect(102, 1, 320, 40), self.exam_button_text, manager=self.ui_manager)
 
-    def _on_enter(self, current_state):
+        _tutorial_button_text = '[H] Help'
+        self.tutorial_botton = UIButton(pygame.Rect(422, 1, 100, 40), _tutorial_button_text, manager=self.ui_manager)
 
-        new_state = State.GAME if current_state == State.EXAM else State.EXAM
-        return new_state
+        # create tutorial window
+        self.tutorial_window = self.world.create_tutorial_window(params=params)
+
+    def _on_enter(self, current_state, mode: str):
+        if mode == "exam":
+            return State.GAME if current_state == State.EXAM else State.EXAM
+        elif mode == "tutorial":
+            if current_state == State.GAME:
+                self.tutorial_window.open()
+                return State.TUTORIAL
+        else:
+            raise ValueError(mode)
 
     def _update_buttons(self, current_state):
         if current_state == State.EXAM:
             self.exam_button.set_text('[ENTER] "I need to investigate more"')
         else:
             self.exam_button.set_text(self.exam_button_text)
+
+        if current_state != State.GAME:
+            self.tutorial_botton.disable()
+        else:
+            self.tutorial_botton.enable()
 
     def get_visible_npcs(self):
         visibile_npcs = [npc for npc in self.npcs if npc.room.name == self.current_room]
@@ -129,6 +145,12 @@ class Game:
         if self.judge.chat_open:
             self.chat_box.draw(screen=screen, npc=self.judge)
 
+        if not self.tutorial_window.tutorial_has_been_opened:
+            self.tutorial_window.draw_tutorial_request_text(screen)
+
+        if self.tutorial_window.is_open:
+            self.tutorial_window.draw(screen)
+
         if not self.chat_box.is_on:
             self.ui_manager.draw_ui(window_surface=screen)
         self.ui_manager.update(0.005)
@@ -137,7 +159,20 @@ class Game:
         if DRAW_GRID:
             draw_distance_grid(screen)
 
-    def handle_player_movement(self, event: Event):
+    def _handle_player_movement(self, event: Event):
+        if event.type == KEYUP:
+            if event.key == K_UP and self.player.dy == -1:
+                self.player.dy = 0
+            elif event.key == K_DOWN and self.player.dy == 1:
+                self.player.dy = 0
+            elif event.key == K_LEFT and self.player.dx == -1:
+                self.player.dx = 0
+            elif event.key == K_RIGHT and self.player.dx == 1:
+                self.player.dx = 0
+
+        if not event.type == KEYDOWN:
+            return
+
         if event.key == K_UP:
             self.player.dy = -1
         elif event.key == K_DOWN:
@@ -170,35 +205,32 @@ class Game:
                     self.chat_box.close_chat()
                 else:
                     self.chat_box.handle_event(event)
-                    continue
+
+            if self.tutorial_window.is_open:
+                assert state == State.TUTORIAL
+                self.tutorial_window.handle_tutorial_events(event)
+            if not self.tutorial_window.is_open and state == State.TUTORIAL:
+                return State.GAME
 
             # handle menu keys
+            self.ui_manager.process_events(event)
             if event.type == KEYDOWN and event.key == K_m:
                 return State.MENU
             elif event.type == KEYDOWN and event.key == K_RETURN:
-                return self._on_enter(state)
+                return self._on_enter(state, mode="exam")
+            elif event.type == KEYDOWN and event.key == K_h:
+                return self._on_enter(state, mode="tutorial")
 
             # handle menu buttons
-            self.ui_manager.process_events(event)
             if event.type == pygame_gui.UI_BUTTON_PRESSED:
                 if event.ui_element == self.menu_button:
                     return State.MENU
                 elif event.ui_element == self.exam_button:
-                    return self._on_enter(state)
+                    return self._on_enter(state, mode="exam")
+                elif event.ui_element == self.tutorial_botton:
+                    return self._on_enter(state, mode="tutorial")
 
-            # handle player movement
-            if event.type == KEYDOWN:
-                self.handle_player_movement(event=event)
-
-            if event.type == KEYUP:
-                if event.key == K_UP and self.player.dy == -1:
-                    self.player.dy = 0
-                elif event.key == K_DOWN and self.player.dy == 1:
-                    self.player.dy = 0
-                elif event.key == K_LEFT and self.player.dx == -1:
-                    self.player.dx = 0
-                elif event.key == K_RIGHT and self.player.dx == 1:
-                    self.player.dx = 0
+            self._handle_player_movement(event=event)
 
         self._update_buttons(current_state=state)
 
@@ -217,7 +249,7 @@ def game_loop():
             menu.draw(screen=screen)
             current_state = menu.handle_events(state=current_state)
 
-        elif current_state in [State.GAME, State.EXAM]:
+        elif current_state in [State.GAME, State.EXAM, State.TUTORIAL]:
             game.room = game.rooms[game.current_room]
             current_state = game.handle_events(state=current_state)
             game.current_room = game.player.move(game.room, npcs=game.get_visible_npcs())
