@@ -1,1 +1,2 @@
-123
+Welcome to this murder mystery game, Detective!
+You're here to investigate the murder of Rick Martin, a PhD student, who was murdered in his own apartment. You're now standing in front of his apartment. All suspects are waiting in the saloon.

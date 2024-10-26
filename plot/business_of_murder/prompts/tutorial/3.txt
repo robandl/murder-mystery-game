@@ -1,0 +1,3 @@
+Your task is to find the murderer among the suspects!
+
+Find out the truth by examening the suspects, Officer Harper, the crime scene, and the surroundings.

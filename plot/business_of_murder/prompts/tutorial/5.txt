@@ -1,0 +1,8 @@
+How to play:
+- use the ARROW keys to move around.
+
+- press the SPACE bar to start chatting or read clues. Press ESC to exit.
+
+- walk through doors that have a red outline.
+
+- press ENTER once you've found the murderer.
