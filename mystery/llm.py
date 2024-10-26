@@ -68,10 +68,12 @@ class LocalLlm(LLM):
 
 def get_llm(model: str) -> Bot:
     if model == "chat_gpt":
-        from langchain import OpenAI
+        # from langchain import OpenAI
+        # from langchain_openai import OpenAI
+        from langchain_openai import ChatOpenAI
 
         return Bot(
-            llm=OpenAI(temperature=0),
+            llm=ChatOpenAI(model="gpt-4o-mini", temperature=0),
             config=LlmConfig(
                 user_str="Detective {user}", ai_str="You", instruction_str="Instructions:", stop_tokens=["Detective"]
             ),

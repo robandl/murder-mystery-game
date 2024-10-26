@@ -127,7 +127,7 @@ class TutorialWindow:
         screen_rect = screen.get_rect()
 
         # Position the text in the center of the screen
-        self.text_rect.midtop = (screen_rect.centerx, self._game_center_y)
+        self.text_rect.midtop = (screen_rect.centerx, self._game_center_y + 100)
 
         # Blit the text onto the screen
         screen.blit(self.text_surface, self.text_rect)

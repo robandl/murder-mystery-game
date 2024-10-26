@@ -25,8 +25,8 @@ params = Params.from_config(config_path)
 screen = pygame.display.set_mode((params.WIDTH, params.HEIGHT + params.CHAT_HEIGHT))
 pygame.display.set_caption("Mystery Dinner")
 
-# bot = get_llm("chat_gpt")
-bot = get_llm("local")
+bot = get_llm("chat_gpt")
+# bot = get_llm("local")
 user = "R.A."
 
 
@@ -214,6 +214,10 @@ class Game:
 
             # handle menu keys
             self.ui_manager.process_events(event)
+
+            if self.chat_box.is_on:
+                continue
+
             if event.type == KEYDOWN and event.key == K_m:
                 return State.MENU
             elif event.type == KEYDOWN and event.key == K_RETURN:
