@@ -14,6 +14,12 @@ from room import Room
 from utils import GREEN, WHITE, Point2D, draw_contour
 
 
+def strip_llm_answer(llm_answer: str):
+    llm_answer = llm_answer.strip()
+    llm_answer = llm_answer.strip("\",")
+    return llm_answer
+
+
 def load_contour_image(img_path: Path) -> Surface:
     img = cv2.imread(str(img_path), cv2.IMREAD_UNCHANGED)
     img_with_contour = draw_contour(img, thickness=20)
@@ -88,8 +94,13 @@ class LlmNPC(NPC):
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
+
         self.bot = bot
 
+        self.ai_str = bot.config.ai_str
+        if self.ai_str is None:
+            # TODO: Fix hack: if chatgpt, set ai_str to model name.
+            self.ai_str = self.name
         prompt = self._load_prompt(prompt_path=prompt_path, config=bot.config, user=user)
 
         verbose = True
@@ -98,7 +109,7 @@ class LlmNPC(NPC):
         if "{user}" in full_user_name:
             full_user_name.replace("{user}", user)
         memory = ConversationBufferWindowMemory(
-            k=3, human_prefix=full_user_name, ai_prefix=bot.config.ai_str, memory_key="history", input_key="user_input"
+            k=3, human_prefix=full_user_name, ai_prefix=self.ai_str, memory_key="history", input_key="user_input"
         )
         self.llm_chain = LLMChain(llm=bot.llm, prompt=prompt, verbose=verbose, memory=memory)
         self.user = user
@@ -117,7 +128,7 @@ class LlmNPC(NPC):
 
         prompt = prompt.replace("{instruction_str}", config.instruction_str)
         prompt = prompt.replace("{user_str}", config.user_str)
-        prompt = prompt.replace("{ai_str}", config.ai_str)
+        prompt = prompt.replace("{ai_str}", self.ai_str)
         prompt = prompt.replace("{user}", user)
         return prompt
 
@@ -131,7 +142,7 @@ class LlmNPC(NPC):
 
         ins = {"stop": self._stop_tokens, "user_input": new_message}
         res = self.llm_chain(ins)
-        answer = res["text"].lstrip()
+        answer = strip_llm_answer(res["text"])
 
         answer = f"{self.name}: {answer}\n"
         self.chat_history += answer

@@ -5,9 +5,9 @@ settings:
 world:
   tutorial:
     prompt: "prompts/tutorial"
-  start_room: RICK_OVERVIEW
+  start_room: RICK_SALOON
   player:
-    start_pos: [350, 520]  # x, y
+    start_pos: [350, 420]  # x, y
     animation:
       figure_img: "images/player_figure.png"
       chat_img: "images/player_figure.png"

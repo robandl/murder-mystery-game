@@ -11,7 +11,7 @@ URI = f'http://{HOST}/api/v1/generate'
 @dataclass
 class LlmConfig:
     user_str: str  # string to begin the query
-    ai_str: str  # string to begin the model response
+    ai_str: str | None  # string to begin the model response
     instruction_str: str = ""  # string to begin the instruction block
     stop_tokens: Optional[List[str]] = None
 
@@ -74,18 +74,20 @@ def get_llm(model: str) -> Bot:
 
         return Bot(
             llm=ChatOpenAI(model="gpt-4o-mini", temperature=0),
+            # ai_str will be set in the NPC
             config=LlmConfig(
-                user_str="Detective {user}", ai_str="You", instruction_str="Instructions:", stop_tokens=["Detective"]
+                user_str="Detective {user}", ai_str=None, instruction_str="Instructions:", stop_tokens=["Detective"]
             ),
         )
     elif model == "local":
         stop_tokens = ["###", "Input"]
+        ai_str = "### Response"
         return Bot(
             llm=LocalLlm(stop_tokens=stop_tokens),
             config=LlmConfig(
                 # TheBloke_Nous-Hermes-13B-GPTQ
                 user_str="### Input",
-                ai_str="### Response",
+                ai_str=ai_str,
                 instruction_str="### Instruction",
                 stop_tokens=stop_tokens,
             ),
