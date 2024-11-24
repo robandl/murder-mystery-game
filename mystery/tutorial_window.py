@@ -25,11 +25,12 @@ class TutorialWindow:
         self,
         params: Params,
         prompt_path: Path | str,
+        user: str,
     ):
         prompt_path = Path(prompt_path)
         page_paths = sorted(list(prompt_path.glob("*.txt")))
         assert len(page_paths) > 0, f"No pages found in {prompt_path}"
-        pages = [page_path.read_text() for page_path in page_paths]
+        pages = [self._read_page(page_path, user=user) for page_path in page_paths]
 
         self.ui_manager = pygame_gui.UIManager((params.WIDTH, params.HEIGHT))
         self.window = CustomUiWindow(
@@ -71,6 +72,11 @@ class TutorialWindow:
         self._page_count = 0
         self._pages = pages
         self.update()
+
+    def _read_page(self, text_path: Path, user: str) -> str:
+        text = text_path.read_text()
+        text = text.replace("{user_str}", user)
+        return text
 
     def handle_tutorial_events(self, event: pygame.Event) -> bool:
         # TODO: Returning boolean is outdated

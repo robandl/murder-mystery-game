@@ -4,7 +4,7 @@ import pygame
 import pygame_gui
 from chat_box import ChatBox
 from end_screen import EndScreen
-from llm import get_llm
+from llm import Bot, get_llm
 from menu import Menu
 from params import Params
 from pygame.constants import K_DOWN, K_ESCAPE, K_LEFT, K_RETURN, K_RIGHT, K_SPACE, K_UP, KEYDOWN, KEYUP, QUIT, K_h, K_m
@@ -15,6 +15,8 @@ from utils import WHITE, Point2D
 from world import World
 
 DRAW_GRID = False
+# LLM_MODE = "local"
+LLM_MODE = "chat_gpt"
 
 # Initialize Pygame
 pygame.init()
@@ -24,10 +26,6 @@ params = Params.from_config(config_path)
 # Set up the display
 screen = pygame.display.set_mode((params.WIDTH, params.HEIGHT + params.CHAT_HEIGHT))
 pygame.display.set_caption("Mystery Dinner")
-
-bot = get_llm("chat_gpt")
-# bot = get_llm("local")
-user = "R.A."
 
 
 def draw_distance_grid(screen: pygame.Surface):
@@ -51,8 +49,10 @@ def draw_distance_grid(screen: pygame.Surface):
 class Game:
     def __init__(
         self,
-        config_path: Path,
+        world: World,
         params: Params,
+        bot: Bot,
+        user: str,
     ):
         self.params = params
 
@@ -71,18 +71,16 @@ class Game:
             button_pos=Point2D(650, 750),
         )
 
-        self.world = World(config_path=config_path)
-        self.current_room = self.world.get_starting_room()
-
-        self.rooms = self.world.create_rooms(params=params)
-        self.room_graph = self.world.create_room_graph(rooms=self.rooms)
-        self.player = self.world.create_player(params, rooms=self.rooms, current_room=self.rooms[self.current_room])
-        self.npcs = self.world.create_npcs(rooms=self.rooms, bot=bot, user=user)
+        self.current_room = world.get_starting_room()
+        self.rooms = world.create_rooms(params=params)
+        self.room_graph = world.create_room_graph(rooms=self.rooms)
+        self.player = world.create_player(params, rooms=self.rooms, current_room=self.rooms[self.current_room])
+        self.npcs = world.create_npcs(rooms=self.rooms, bot=bot, user=user)
 
         # add items to npcs for now
-        self.npcs += self.world.create_items(rooms=self.rooms)
+        self.npcs += world.create_items(rooms=self.rooms)
 
-        self.officer = self.world.create_officer(npcs=self.npcs, rooms=self.rooms, room_graph=self.room_graph)
+        self.officer = world.create_officer(npcs=self.npcs, rooms=self.rooms, room_graph=self.room_graph)
         self.judge = self.officer.judge
         #        self.active_npc = None
 
@@ -95,7 +93,7 @@ class Game:
         self.tutorial_botton = UIButton(pygame.Rect(422, 1, 100, 40), _tutorial_button_text, manager=self.ui_manager)
 
         # create tutorial window
-        self.tutorial_window = self.world.create_tutorial_window(params=params)
+        self.tutorial_window = world.create_tutorial_window(params=params, user=user)
 
     def _on_enter(self, current_state, mode: str):
         if mode == "exam":
@@ -242,9 +240,21 @@ class Game:
 
 
 def game_loop():
-    current_state = State.MENU
+    current_state = State.INTRO
+    # current_state = State.MENU
     # current_state = State.END
-    game = Game(config_path=config_path, params=params)
+
+    world = World(config_path=config_path)
+
+    intro = world.create_info_screen(params=params)
+    user = intro.get_default_user()
+    if current_state == State.INTRO:
+        user = intro.run_intro_and_user_name_entry(screen=screen)
+        current_state = State.MENU
+
+    bot = get_llm(LLM_MODE, user=user)
+
+    game = Game(world=world, params=params, bot=bot, user=user)
     menu = Menu(params=params)
     end_screen = EndScreen(params=params)
 

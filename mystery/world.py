@@ -5,6 +5,7 @@ import numpy as np
 import yaml
 from animation import Animation
 from door import Door
+from intro_screen import IntroScreen
 from item import Item
 from llm import Bot
 from npc import NPC, LlmNPC
@@ -29,6 +30,20 @@ class World:
     def get_starting_room(self):
         room_str = self.world_config["start_room"]
         return RoomName[room_str.upper()]
+
+    def create_info_screen(self, params: Params) -> IntroScreen:
+        intro_config = self.world_config["intro"]
+        intro_img = self._get_abs_path(intro_config["intro_img"])
+        officer_img = self._get_abs_path(intro_config["officer_img"])
+        officer_name = intro_config["officer_name"]
+        default_user = intro_config["default_user_name"]
+        return IntroScreen(
+            params=params,
+            image_path=intro_img,
+            officer_path=officer_img,
+            officer_name=officer_name,
+            default_user=default_user,
+        )
 
     def create_player(self, params: Params, rooms: list[Room], current_room: Room) -> Player:
         player_config = self.world_config["player"]
@@ -112,11 +127,11 @@ class World:
                 items.append(item)
         return items
 
-    def create_tutorial_window(self, params: Params) -> TutorialWindow:
+    def create_tutorial_window(self, params: Params, user: str) -> TutorialWindow:
         config = self.world_config.get("tutorial", None)
         assert config is not None, "No tutorial config found"
         prompt_path = self._get_abs_path(config["prompt"])
-        return TutorialWindow(params=params, prompt_path=prompt_path)
+        return TutorialWindow(params=params, prompt_path=prompt_path, user=user)
 
     def _create_doors(self, door_configs, in_room: RoomName) -> List[Door]:
         doors = []
