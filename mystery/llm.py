@@ -66,17 +66,16 @@ class LocalLlm(LLM):
         return {}
 
 
-def get_llm(model: str) -> Bot:
+def get_llm(model: str, user: str) -> Bot:
     if model == "chat_gpt":
-        # from langchain import OpenAI
-        # from langchain_openai import OpenAI
         from langchain_openai import ChatOpenAI
 
+        ai_str = None  # ai_str will be set in the NPC
+        stop_token = f"Detective {user}:"
         return Bot(
             llm=ChatOpenAI(model="gpt-4o-mini", temperature=0),
-            # ai_str will be set in the NPC
             config=LlmConfig(
-                user_str="Detective {user}", ai_str=None, instruction_str="Instructions:", stop_tokens=["Detective"]
+                user_str="Detective {user}", ai_str=ai_str, instruction_str="Instructions:", stop_tokens=[stop_token]
             ),
         )
     elif model == "local":
