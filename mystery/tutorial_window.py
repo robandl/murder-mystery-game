@@ -4,10 +4,11 @@ import pygame
 import pygame.constants as pyconstants
 import pygame_gui
 import pygame_gui.data
-from mystery.params import Params
 from pygame_gui import UI_BUTTON_PRESSED
 from pygame_gui._constants import UI_WINDOW_CLOSE
 from pygame_gui.elements import UIButton, UITextBox, UIWindow
+
+from mystery.params import Params
 
 
 class CustomUiWindow(UIWindow):
@@ -78,7 +79,7 @@ class TutorialWindow:
         text = text.replace("{user_str}", user)
         return text
 
-    def handle_tutorial_events(self, event: pygame.Event) -> bool:
+    def handle_tutorial_events(self, event: pygame.event) -> bool:
         # TODO: Returning boolean is outdated
         if event.type == pygame_gui.UI_WINDOW_CLOSE and event.ui_element == self.window:
             self._is_open = False

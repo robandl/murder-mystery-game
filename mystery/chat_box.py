@@ -29,7 +29,7 @@ class ChatBox:
         self.img_size = (int(params.WIDTH / 4 * 0.96), int(params.CHAT_HEIGHT * 0.96))
         self.img_pos = (int(0.02 * params.WIDTH / 4), int(params.HEIGHT + 0.02 * params.CHAT_HEIGHT))
 
-    def handle_event(self, event: pygame.Event) -> bool:
+    def handle_event(self, event: pygame.event) -> bool:
         self.ui_manager.process_events(event)
         if event.type == UI_BUTTON_PRESSED:
             if event.ui_element == self.leave_button:

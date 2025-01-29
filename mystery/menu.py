@@ -26,7 +26,7 @@ class Menu:
 
         return state
 
-    def _handle_event(self, event: pygame.Event) -> bool:
+    def _handle_event(self, event: pygame.event) -> bool:
         # handle keys
         if event.type == KEYDOWN and event.key == K_1:
             return State.GAME

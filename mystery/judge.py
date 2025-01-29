@@ -74,7 +74,7 @@ class Judge:
     def _prepare_prompt(self, prompt):
         prompt = prompt.replace("{instruction_str}", self.bot.config.instruction_str)
         prompt = prompt.replace("{user_str}", self.bot.config.user_str)
-        prompt = prompt.replace("{ai_str}", self.bot.config.ai_str)
+        prompt = prompt.replace("{ai_str}", "Jugde")
         prompt = prompt.replace("{user}", self.user)
         return prompt
 
