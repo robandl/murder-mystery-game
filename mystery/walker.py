@@ -23,7 +23,7 @@ class Walker:
         door_collision: bool = True,
     ):
         self.pos = pos
-        self.speed = 1.0
+        self.speed = 1.75
         self.dx = 0
         self.dy = 0
         self.rooms = rooms
