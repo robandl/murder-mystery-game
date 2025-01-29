@@ -13,7 +13,6 @@ from pygame_gui.elements import UIButton
 from state import State
 from utils import WHITE, Point2D
 from world import World
-import os
 
 DRAW_GRID = False
 # LLM_MODE = "local"
@@ -25,8 +24,11 @@ config_path = Path(__file__).resolve().parent.parent / "plot" / "business_of_mur
 params = Params.from_config(config_path)
 
 # Set up the display
-#screen = pygame.display.set_mode()
-screen = pygame.display.set_mode((params.WIDTH, params.HEIGHT + params.CHAT_HEIGHT), pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.SCALED)
+# screen = pygame.display.set_mode()
+screen = pygame.display.set_mode(
+    (params.WIDTH, params.HEIGHT + params.CHAT_HEIGHT),
+    pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.SCALED,
+)
 pygame.display.set_caption("Mystery Dinner")
 
 
